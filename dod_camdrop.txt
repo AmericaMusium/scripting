@@ -1,0 +1,19 @@
+#include <amxmodx>
+#include <amxmisc>
+#include <fakemeta>
+#include <hamsandwich>
+#include <fakemeta_util>
+#include <dodx>
+#include <dodfun>
+#include <fun>
+#include <engine>
+
+
+#define PLUGIN "DOD CAMDROP"
+#define VERSION "1.7 nov2022"
+#define AUTHOR "[America][TheVaskov]"
+
+public plugin_init()
+{
+	register_plugin(PLUGIN, VERSION, AUTHOR)
+}

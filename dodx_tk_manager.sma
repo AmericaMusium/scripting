@@ -1,0 +1,480 @@
+
+/* AMXMOD script - dod_tk_manager
+*
+*  Team Killer manager for DOD - by Fractal (fractal323@comcast.net) and SidLuke (sidluke@o2.pl)
+*  Provides simple automated control over TKers
+*
+*  Commands to forgive tks are any of "forgivetk", "forgive tk", "!forgivetk", "!forgive tk"
+*  (can be upper or lower case)
+*
+*
+*  Cvar settings (put in amx.cfg):
+*  -------------------------------
+*  amx_tk_limit <value>               -  number of TKs allowed before banning
+*  amx_tk_bantime <minutes>           -  how long to ban if limit exceeded (0=permanent)
+*  amx_tk_adminimmunity <0|1>         -  prevent admin from being kicked/banned for TKing
+*                                        (for admins with ADMIN_BAN access)
+*  amx_tk_forgivetype <0|1|2>         -  how to forgive, 0="say forgivetk", 1=Yes/No menu, 2=both
+*  amx_tk_usemapmemory <0|1>          -  use map specific TK memory (prevents TKers from
+*                                        resetting their counter by disconnecting/reconnecting)
+*  amx_tk_infomessages <0|1>          -  show information messages (chat text)
+*  amx_tk_usehostname <0|1>           -  use hostname in messages
+*
+*
+*  default settings
+*  ----------------
+*  amx_tk_limit 5
+*  amx_tk_bantime 1440
+*  amx_tk_adminimmunity 1
+*  amx_tk_forgivetype 2
+*  amx_tk_usemapmemory 1
+*  amx_tk_infomessages 1
+*  amx_tk_usehostname 1
+*
+*/
+
+#include <amxmodx>
+#include <amxmisc>
+#include <fun>
+#include <dodx>
+
+#define TK_P_SLAY			(1<<0)
+#define TK_P_MIRROR_DMG		(1<<1)
+
+new Float:g_SpawnTime[33]
+new Float:g_LastAttackTime[33]
+
+new g_adminimmunity
+new g_forgivetype
+
+new g_TKlimit
+new g_TKbantime
+
+new g_infomessages
+new g_servername[32]
+
+new g_player_authid[33][40]
+new g_player_authenticated[33]
+new g_TKcount[33]
+new g_FGmenu_killerid[33]
+
+new LastTKer = 0
+new LastTKed = 0
+new BeLastTKer = 0
+new BeLastTKed = 0
+
+
+/* main */
+public plugin_init()
+{
+	register_plugin("DoD TK Manager","1.0.0","Fractal&SidLuke")
+	register_event("ResetHUD","eResetHud","b")
+
+	register_cvar("amx_tk_limit","5")
+	register_cvar("amx_tk_bantime","1440")
+	register_cvar("amx_tk_adminimmunity","1")
+	register_cvar("amx_tk_forgivetype","2")
+
+	register_cvar("amx_tk_usemapmemory","1")
+
+	register_cvar("amx_tk_infomessages","1")
+	register_cvar("amx_tk_usehostname","1")
+
+	register_cvar("amx_tk_protection","ab")
+	register_cvar("amx_tk_multionetk","1")
+	register_cvar("amx_tk_meleeslay","1")
+	register_cvar("amx_tk_protectiontime","10.0")
+
+
+	register_clcmd("say","HandleSay")
+	register_clcmd("say_team","HandleSay")
+
+	register_concmd("amx_forgivetk","admin_forgivetk",ADMIN_BAN,"<new|old> : forgives most recent or least recent TK")
+	register_menucmd(register_menuid("Forgive"),1023,"actionFGMenu")
+
+	register_statsfwd(XMF_DEATH)
+	register_statsfwd(XMF_DAMAGE)
+
+	set_task(0.6,"load_settings") 
+
+	return PLUGIN_CONTINUE
+}
+
+public client_connect(id)
+{  
+	g_player_authenticated[id] = 0
+	return PLUGIN_CONTINUE 
+} 
+
+public client_putinserver(id)
+{  
+	get_user_authid(id,g_player_authid[id],39)
+	g_player_authenticated[id] = 1
+	g_TKcount[id] = 0
+
+	if (!get_cvar_num("amx_tk_usemapmemory") || is_user_bot(id))
+		return PLUGIN_CONTINUE 
+		
+	new TKfile[64]
+
+	get_datadir(TKfile,63)
+	add(TKfile,63,"/%s.txt")
+	format(TKfile,63,TKfile,g_player_authid[id])
+	
+	//fix for VALVE id problem
+	replace(TKfile,63,":","_")
+	replace(TKfile,63,":","_")
+
+	if (file_exists(TKfile))
+	{
+		new currmap[32]
+		get_mapname(currmap,31)
+		new text[32]
+		new a = 0
+		if (read_file(TKfile,1,text,31,a) && equali(currmap,text))
+		{
+			if (read_file(TKfile,2,text,31,a)) 
+				g_TKcount[id] = str_to_num(text)
+		}
+		else
+			delete_file(TKfile)
+	}
+
+	return PLUGIN_CONTINUE 
+} 
+
+public client_disconnect(id)
+{
+	if (!get_cvar_num("amx_tk_usemapmemory") || is_user_bot(id))
+		return PLUGIN_CONTINUE 
+
+	if (g_player_authenticated[id] && g_TKcount[id] > 0)
+	{
+		new TKfile[64]
+
+		get_datadir(TKfile,63)
+		add(TKfile,63,"/%s.txt")
+
+		format(TKfile,63,TKfile,g_player_authid[id])
+		replace(TKfile,63,":","_")
+		replace(TKfile,63,":","_")
+		new currmap[32]
+		get_mapname(currmap,31)
+		write_file(TKfile,currmap,1)
+		new text[8]
+		num_to_str(g_TKcount[id],text,7)
+		write_file(TKfile,text,2)
+	}
+	return PLUGIN_CONTINUE 
+} 
+
+public eResetHud(id){
+	g_SpawnTime[id] = get_gametime()
+	return PLUGIN_CONTINUE 
+}
+
+public client_damage(attacker,victim,damage,wpnindex,hitplace,TA){
+	if ( !TA || attacker==victim || ( get_user_flags(attacker)&ADMIN_IMMUNITY && g_adminimmunity ) )
+		return PLUGIN_CONTINUE
+
+	new name[32]
+	get_user_name(attacker,name,31)
+	// spawn protection
+	if ( get_gametime() - g_SpawnTime[victim] < get_cvar_float("amx_tk_protectiontime") ){
+		new szCvar[8]
+		get_cvar_string("amx_tk_protection",szCvar,7)		
+		new flags = read_flags(szCvar)
+		if ( flags ){
+			if ( flags&TK_P_SLAY ){
+				set_task(0.5,"delayedkill",attacker)
+				set_hudmessage(255, 255, 255, 0.05, 0.575, 0, 3.0, 10.0, 0.1, 0.5, 8)  
+				show_hudmessage(0,"%s^nSlayed for teammate attack after respawn", name)
+				log_message("[ADMIN] %s Slayed for teammate attack after respawn", name)
+			}
+			if ( flags&TK_P_MIRROR_DMG && is_user_alive(victim) ){
+				new oldHP = get_user_health( victim )
+				set_user_health( victim,oldHP + damage )
+				if ( is_user_alive(attacker) ){ // TK_P_SLAY off ?
+					oldHP = get_user_health( attacker )
+					set_user_health( attacker,oldHP - damage )
+				}
+			}
+		}
+		return PLUGIN_CONTINUE
+	}
+
+	if ( get_cvar_num("amx_tk_meleeslay") && xmod_is_melee_wpn(wpnindex) ){
+		set_task(0.5,"delayedkill",attacker)
+		set_hudmessage(255, 255, 255, 0.05, 0.575, 0, 3.0, 10.0, 0.1, 0.5, 8)  
+		show_hudmessage(0,"%s^nSlayed for melee attack", name)
+		log_message("[ADMIN] %s Slayed for melee attack", name)
+	}
+
+	return PLUGIN_CONTINUE
+}
+
+public client_death(killer,victim,wpnindex,hitplace,TK)
+{
+	if ( !TK || killer==victim || ( get_user_flags(killer)&ADMIN_IMMUNITY && g_adminimmunity ) )
+		return PLUGIN_CONTINUE
+
+	if ( get_cvar_num("amx_tk_multionetk") ){
+		if ( g_LastAttackTime[killer] == get_gametime() ){
+			//log("Ignoring TK (Multi TK)") // ??
+			return PLUGIN_CONTINUE
+		}
+	}
+
+	g_LastAttackTime[killer] = get_gametime()
+	
+	TKPunish(killer, victim)
+	BeLastTKer = LastTKer
+	BeLastTKed = LastTKed
+	LastTKer = killer
+	LastTKed = victim
+
+	return PLUGIN_CONTINUE 
+} 
+
+public admin_forgivetk(id,level,cid)
+{
+	if (!cmd_access(id,level,cid,2))
+		return PLUGIN_HANDLED
+
+	new text[4]
+	read_argv(1,text,3)
+	if (equali(text,"new") == 0)
+		forgiveNewTK()
+	else if (equali(text,"old") == 0)
+		forgiveOldTK()
+
+	return PLUGIN_HANDLED
+}
+
+public HandleSay(id)
+{
+	if (g_forgivetype==1)
+		return PLUGIN_CONTINUE
+
+	new text[12]
+	read_argv(1,text,11)
+
+	if (forgivetk(text))
+	{
+		new menuid, keys
+		if (id == LastTKed)
+		{
+			// if they still have menu on screen then cancel it
+			if (get_user_menu(id,menuid,keys) && g_FGmenu_killerid[id]==LastTKer)
+				client_cmd(id,"slot3")
+			forgiveNewTK()
+		}
+		else if (id == BeLastTKed)
+		{
+			if (get_user_menu(id,menuid,keys) && g_FGmenu_killerid[id]==BeLastTKer)
+				client_cmd(id,"slot3")
+			forgiveOldTK()
+		}
+	}
+
+	return PLUGIN_CONTINUE
+}
+
+public load_settings()
+{
+	g_TKlimit = get_cvar_num("amx_tk_limit")
+	g_TKbantime = get_cvar_num("amx_tk_bantime")
+	g_adminimmunity = get_cvar_num("amx_tk_adminimmunity")
+	g_forgivetype = get_cvar_num("amx_tk_forgivetype")
+	g_infomessages = get_cvar_num("amx_tk_infomessages")
+	if (get_cvar_num("amx_tk_usehostname"))
+		get_cvar_string("hostname",g_servername,31) 
+	else
+		format(g_servername,31,"this server")
+
+	return PLUGIN_CONTINUE
+}
+
+forgivetk(text[])
+{
+	if (containi(text,"forgivetk") == 0)
+		return 1
+	if (containi(text,"!forgivetk") == 0)
+		return 1
+	if (containi(text,"forgive tk") == 0)
+		return 1
+	if (containi(text,"!forgive tk") == 0)
+		return 1
+
+	return 0
+}
+
+TKPunish(killer, victim)
+{
+
+	g_TKcount[killer]++
+	if (g_TKcount[killer] < 1)
+		return 0
+
+	new name[32], userid
+	get_user_name(killer,name,31)
+
+
+
+	if (g_TKcount[killer] < g_TKlimit)
+	{
+
+
+
+		set_hudmessage(255, 255, 255, 0.05, 0.575, 0, 3.0, 10.0, 0.1, 0.5, 8)  
+		show_hudmessage(0,"%s^nTK warning %i of %i", name, g_TKcount[killer], g_TKlimit)
+		log_message("[ADMIN] %s TK warning %i of %i", name, g_TKcount[killer], g_TKlimit)
+	}
+	else if (g_TKcount[killer] == g_TKlimit)
+	{
+		set_task(0.5,"delayedkill",killer)
+		set_hudmessage(255, 255, 255, 0.05, 0.575, 0, 3.0, 10.0, 0.1, 0.5, 8)  
+		show_hudmessage(0,"%s^nSlayed for violating %i TK warning", name, g_TKlimit)
+		log_message("[ADMIN] %s Slayed for violating %i TK warning", name, g_TKlimit)
+	}
+	else
+	{
+		set_task(0.5,"delayedkill",killer)
+		set_hudmessage(255, 0, 0, 0.05, 0.575, 0, 3.0, 11.0, 0.1, 0.5, 8)  
+		if (g_adminimmunity && (get_user_flags(killer) & ADMIN_BAN))
+		{
+
+			show_hudmessage(0,"%s^nExceeded %i TK limit", name, g_TKlimit)
+			log_message("[ADMIN] %s Exceeded %i TK limit", name, g_TKlimit)
+		}
+		else
+		{
+			if ((g_TKbantime % 1440)==0)
+			{
+				show_hudmessage(0,"%s^nExceeded %i TK limit and is BANNED for %d hours", name, g_TKlimit, (g_TKbantime / 60))
+				log_message("[ADMIN] %s Exceeded %i TK limit and is BANNED for %d hours", name, g_TKlimit, (g_TKbantime / 60))
+			}
+			else if (g_TKbantime < 60)
+			{
+				show_hudmessage(0,"%s^nExceeded %i TK limit and is BANNED for %d minutes", name, g_TKlimit, (g_TKbantime % 1440))
+				log_message("[ADMIN] %s Exceeded %i TK limit and is BANNED for %d minutes", name, g_TKlimit, (g_TKbantime % 1440))
+			}
+			else
+			{
+				show_hudmessage(0,"%s^nExceeded %i TK limit and is BANNED for %d hours %d minutes", name, g_TKlimit, (g_TKbantime / 60), (g_TKbantime % 1440))
+				log_message("[ADMIN] %s Exceeded %i TK limit and is BANNED for %d hours %d minutes", name, g_TKlimit, (g_TKbantime / 60), (g_TKbantime % 1440))
+			}
+			userid = get_user_userid(killer)
+			set_task(0.5,"delayedkick",userid)
+		}
+
+		return PLUGIN_CONTINUE
+	}
+
+	if (g_infomessages)
+	{
+		client_print(0,print_chat,"[ADMIN] %i team kills will get you slayed", g_TKlimit) 
+		if ((g_TKbantime % 1440)==0)
+			client_print(0,print_chat,"[ADMIN] %i team kills will get you a %d HOUR ban from %s",g_TKlimit + 1,(g_TKbantime / 60),g_servername) 
+		else if (g_TKbantime < 60)
+			client_print(0,print_chat,"[ADMIN] %i team kills will get you a %d MINUTE ban from %s",g_TKlimit + 1,(g_TKbantime % 1440),g_servername) 
+
+		else
+			client_print(0,print_chat,"[ADMIN] %i team kills will get you a %d HOUR %d MINUTE ban from %s",g_TKlimit + 1,(g_TKbantime / 60),(g_TKbantime % 1440),g_servername) 
+		client_print(0,print_chat,"[ADMIN] Team killers can be forgiven by saying forgivetk") 
+	}
+
+	if (g_forgivetype!=0)
+	{
+		new menuBody[192]
+		format(menuBody,191,"Forgive %s's TK?^n^n1. Yes^n2. No^n^n3. Exit^n",name)
+		new keys = (1<<0)|(1<<1)|(1<<2)
+		g_FGmenu_killerid[victim] = killer
+		show_menu(victim,keys,menuBody,30)
+	}
+	return PLUGIN_CONTINUE
+}
+
+public actionFGMenu(id,key)
+{
+	switch(key)
+	{
+		case 0:
+		{
+			g_TKcount[g_FGmenu_killerid[id]]--
+
+			new NameV[32], NameK[32]
+			get_user_name(id,NameV,31)
+			get_user_name(g_FGmenu_killerid[id],NameK,31)
+
+			set_hudmessage(0, 90, 235, 0.05, 0.675, 0, 3.0, 11.0, 0.1, 0.5, 9)  
+			show_hudmessage(0,"%s has forgiven %s's TK.", NameV, NameK)
+			log_message("[ADMIN] %s has forgiven %s's TK.", NameV, NameK)
+		}
+	}
+
+	return PLUGIN_HANDLED
+}
+
+forgiveNewTK()
+{
+	//these checks are to make sure we don't touch any numbers
+	//if the player doesn't exist (aka this TK was already forgiven)
+	if ( LastTKed == 0 || LastTKer == 0 )
+		return
+
+	g_TKcount[LastTKer]--
+
+	new NameV[32]
+	get_user_name(LastTKed,NameV,31)
+
+	new NameK[32]
+	get_user_name(LastTKer,NameK,31)
+
+	set_hudmessage(0, 90, 235, 0.05, 0.675, 0, 3.0, 11.0, 0.1, 0.5, 9)  
+	show_hudmessage(0,"%s has forgiven %s's TK.", NameV, NameK)
+	log_message("[ADMIN] %s has forgiven %s's TK.", NameV, NameK)
+
+	LastTKed = BeLastTKed
+
+	LastTKer = BeLastTKer
+	BeLastTKed = 0
+	BeLastTKer = 0
+
+}
+
+
+forgiveOldTK()
+{
+	//these checks are to make sure we don't touch any numbers
+	//if the player doesn't exist (aka this TK was already forgiven)
+	if (BeLastTKed == 0 || BeLastTKer == 0)
+		return
+
+	g_TKcount[BeLastTKer]--
+
+	new NameV[32]
+	get_user_name(BeLastTKed,NameV,31)
+
+	new NameK[32]
+	get_user_name(BeLastTKer,NameK,31)
+
+	set_hudmessage(0, 90, 235, 0.05, 0.675, 0, 3.0, 11.0, 0.1, 0.5, 9)  
+	show_hudmessage(0,"%s has forgiven %s's TK.", NameV, NameK)
+	log_message("[ADMIN] %s has forgiven %s's TK.", NameV, NameK)
+
+	BeLastTKed = 0
+	BeLastTKer = 0
+
+}
+
+public delayedkill(id){
+	user_kill(id)
+}
+
+public delayedkick(userid){
+	server_cmd("banid %d.0 #%d",g_TKbantime,userid)
+	server_cmd("writeid")
+
+	server_cmd("kick #%d",userid)
+}
