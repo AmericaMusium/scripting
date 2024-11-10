@@ -8,7 +8,7 @@
 
 #define PLUGINNAME	"AMXX Parachute"
 #define VERSION		"1.0"
-#define AUTHOR		"KRoT@L (Ported by 29thID)"
+#define AUTHOR		"America"
 
 
 #define m_afButtonPressed 238

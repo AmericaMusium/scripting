@@ -51,6 +51,7 @@
 
 new const gentClassname[] = "tripsatchel" //Classname  entity
 new const gentModel[] = "models/tripmine_475.mdl" 
+// new const gentModel[] = "models/trippump_475.mdl" 
 new const gentSpriteExplode[] = "sprites/explosion1.spr" 
 new const gentSpriteSmoke[] = "sprites/puff.spr" // 
 new gent_Sprite[3] //   
