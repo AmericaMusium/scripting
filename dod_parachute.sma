@@ -57,7 +57,7 @@ public fw_Player_ObjectCaps(id)
 
 	if(get_pdata_int(id, m_afButtonPressed, 5) & IN_USE)
 	{
-		client_print(id,print_chat,"pressed E")
+		// client_print(id,print_chat,"pressed E")
 
         if ( !( get_entity_flags(id) & FL_ONGROUND ) )
 		{
@@ -132,7 +132,7 @@ public fw_Player_ObjectCaps2(id)
 
 	if(get_pdata_int(id, m_afButtonPressed, 5) & IN_USE)
 	{
-		client_print(id,print_chat,"pressed E")
+		// client_print(id,print_chat,"pressed E")
 
         if ( !( get_entity_flags(id) & FL_ONGROUND ) )
 		{

@@ -18,6 +18,11 @@
 new const g_szMdlPArtifact[] = "models/red/jacket_2.mdl";
 
 
+/* создать энтити ,скопироть каак у плеера 
+ поставить камеру в него и поставить В модель ( 
+	*/
+ 
+
 
 new bool:acceptzoom[33] // Accept to zoom rifle
 
@@ -46,7 +51,7 @@ public client_PostThink(i_player){
 	{
 		if(g_i_status[i_player]==false)
 		{
-			g_i_status[i_player]=true // �����  i_player ������ +attack2
+			g_i_status[i_player]=true // �����  i_player ������ +attack2
 			
 			
 			acceptzoom[i_player]=false
@@ -66,7 +71,7 @@ public client_PostThink(i_player){
 	else {
 		if(g_i_status[i_player]==true)
 		{
-			g_i_status[i_player]=false // ����� i_player ������ -attack2
+			g_i_status[i_player]=false // ����� i_player ������ -attack2
 			
 		}
 	}

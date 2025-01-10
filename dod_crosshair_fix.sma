@@ -10,7 +10,8 @@
 new g_LastWeapon[33] = 0;
 new msg_ResetHud;
 
-public plugin_init(){
+public plugin_init()
+{
 register_plugin("DOD Crosshair fix", "0.0", "America");
 msg_ResetHud = get_user_msgid("ResetHUD");
 register_event("CurWeapon", "CurWeapon_P", "be", "1=1");

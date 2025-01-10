@@ -365,8 +365,9 @@ g_i_weapon[idx_wpn] = i
 
 // устнаовить количество патронов
 set_pdata_int(idx_wpn, m_iClip,  g_weapons[i][m_clip], linux_diff_weapon);
-/// WANTED! SETTER FOR AMMO 
+/// --WANTED! SETTER FOR AMMO 
 // set_pdata_int(idx_wpn, ??? , g_weapons[i][m_ammo], linux_diff_weapon);
+// set_pdata_int(idx_wpn, m_iDefaultAmmo, 0); SETTER FOR AMMO 
 
 
 // обновить HUD

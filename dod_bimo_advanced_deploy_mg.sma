@@ -27,7 +27,7 @@
 	Just as DoD:Source does, if the object upon which you're 
 	deploying is lower than your normal height, you drop down 
 	a bit to meet it. This will enable/disable that function.
-
+original
 */
 
 #include <amxmodx>
