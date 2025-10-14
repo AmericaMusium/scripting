@@ -18,6 +18,7 @@ public plugin_init()
 
     server_print("OKAPI RUNS 2")
     // okapi_mod_replace_int(1,2)
+    Reg_ThinkZoomOutIn()
 }
 
 public On_func_ThinkZoomOutIn(idx_weapon)
@@ -28,19 +29,23 @@ public On_func_ThinkZoomOutIn(idx_weapon)
 
 public plugin_precache()
 {   
-    Reg_ThinkZoomOutIn()
+    
 }
 
 public Reg_ThinkZoomOutIn()
-{
-    new func_ThinkZoomOutIn_CBasePlayerWeapon_ptr = okapi_mod_get_symbol_ptr("?ThinkZoomOutIn@CScopedKar@@QAEXXZ") 
+{   
+
+
+    /// _ZN10CScopedKar14ThinkZoomOutInEv
+    // ?ThinkZoomIn@CBasePlayerWeapon@@QAEXXZ
+    new func_ThinkZoomOutIn_CBasePlayerWeapon_ptr = okapi_engine_get_symbol_ptr("?ThinkZoomIn@CBasePlayerWeapon@@QAEXXZ") 
+    server_print("OKAPI func_ThinkZoomOutIn_CBasePlayerWeapon_ptr finded %d",func_ThinkZoomOutIn_CBasePlayerWeapon_ptr )
     if(!func_ThinkZoomOutIn_CBasePlayerWeapon_ptr)
     {   
+        server_print("OKAPI not finded 000000: %d" , func_ThinkZoomOutIn_CBasePlayerWeapon_ptr)
         return
-    //install_gamerules_ptr = okapi_get_treemap_ptr("[TG.;nC'.pbG.sXQ.J=g(.;OS'.ueA.1/.*K}.`/F'. 8u{.s9s{.Ohi(.,lm{.s9s{.2/#&.*0J.lE>'.1`}&.-]}&.vMa(.zp='.<cN'.=j12")
     }
     func_ThinkZoomOutIn_CBasePlayerWeapon = okapi_build_method(func_ThinkZoomOutIn_CBasePlayerWeapon_ptr, arg_cbase, arg_cbase)
     okapi_add_hook(func_ThinkZoomOutIn_CBasePlayerWeapon,"On_func_ThinkZoomOutIn", 0) // 1 = post
-
     return
 }

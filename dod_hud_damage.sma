@@ -24,10 +24,26 @@ public plugin_init()
 
 public on_TakeDamage_Post(victim, inflictor, attacker, Float:damage, damage_type)
 {
-    if(is_user_alive(attacker))
+    if(is_user_alive(attacker) && Util_Should_Message_Client( attacker ))
     {
     set_hudmessage(250, 100, 100, 0.5, 0.5, 0 , 0.0 , 0.0 , 3.0, 0.0 , 2)
     show_hudmessage(attacker, "%.0f", damage)
     }
-
 }
+
+
+
+public Util_Should_Message_Client( id )
+{
+    if( id == 0 || id > MAX_PLAYERS )
+    {
+        return false;
+    }
+
+    if( is_user_connected( id ) && !is_user_bot( id ) && is_user_alive(id) )
+    {
+        return true;
+    }
+
+    return false;
+} 

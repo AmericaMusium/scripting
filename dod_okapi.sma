@@ -29,11 +29,11 @@ public plugin_init()
 
     */
 
-    // okapi_mod_replace_string("Axis", "Ussr",1)
+
     // okapi_engine_replace_string("Axis", "Ussr",1)
     register_event("SetFOV","Set_fov_post","be","1>0") // проверить перезапись угла
 
-    server_print("OKAPI RUNS")
+    server_print("OKAPI Started")
     // okapi_mod_replace_int(1,2)
 }
 
@@ -74,18 +74,8 @@ public On_func_Test(idx_weapon)
 
 /////////////////
 
-
-
-
-
-
-
-
-
 public plugin_precache()
 {   
-
-
 
     // ZOOM FUNC
     

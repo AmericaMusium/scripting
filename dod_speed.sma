@@ -12,9 +12,9 @@ public plugin_init() {
 }
 
 public fw_PlayerPreThink(id) {
-    if (!is_user_alive(id))
-        return FMRES_IGNORED;
-    
+    if( Util_Should_Message_Client( id ) )
+    {
+    //Action
     // Получаем текущую скорость игрока
     new Float:velocity[3];
     get_user_velocity(id, velocity);
@@ -28,5 +28,21 @@ public fw_PlayerPreThink(id) {
     show_hudmessage(id, "Скорость: %.0f u/s", speed);
     
     return FMRES_IGNORED;
+    }
+    return FMRES_IGNORED;
 }
 
+public Util_Should_Message_Client( id )
+{
+    if( id == 0 || id > MAX_PLAYERS )
+    {
+        return false;
+    }
+
+    if( is_user_connected( id ) && !is_user_bot( id ) && is_user_alive(id) )
+    {
+        return true;
+    }
+
+    return false;
+} 

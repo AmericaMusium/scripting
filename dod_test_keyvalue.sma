@@ -11,7 +11,7 @@ new g_ent
 
 // Done in precache so it is caught before the entities are spawned
 public plugin_precache() {
-	register_forward(FM_KeyValue, "forward_keyvalue")
+	register_forward(FM_KeyValue, "forward_keyvalue2")
 	
 }
 
@@ -26,56 +26,58 @@ return PLUGIN_CONTINUE
 // Thanks VEN for helping out with the following function
 public forward_keyvalue(ent, handle) {
 
-	new szClassname[32],szKeyname[32],szValue[32]
+new szClassname[32],szKeyname[32],szValue[32]
 
-	if (!pev_valid(ent))
-		
-		
-		/*
-		get_kvd(handle, KV_Value, szValue, 31)
-		server_print("ENT ---  %d ::  %s,", ent,  szValue)
+if (!pev_valid(ent))
 
-	ENT ---  342 ::  ,
-	ENT ---  342 ::  ,
-	ENT ---  343 ::  func_wall,
-	ENT ---  343 ::  ,
-	ENT ---  343 ::  ,
-		*/
-		return FMRES_IGNORED
-	
-	
-	
-	
 
-	// this variable will tell us whether the first KVD is fired to the hostage
-	new bool:first_kvd = false
-	if (ent != g_ent) { // hence this is the next hostage who recieves the KVD
-		first_kvd = true // hence this is his first KVD
-		g_ent = ent // our current hostage entity is the ent
-	}
+/*
+get_kvd(handle, KV_Value, szValue, 31)
+server_print("ENT ---  %d ::  %s,", ent,  szValue)
 
-	static key[28]
-	// retrieve the key name
-	get_kvd(handle, KV_KeyName, key, 27)
+ENT ---  342 ::  ,
+ENT ---  342 ::  ,
+ENT ---  343 ::  func_wall,
+ENT ---  343 ::  ,
+ENT ---  343 ::  ,
+*/
+return FMRES_IGNORED
 
-	// this check will allow us to not fire this KVD multiple times, we need it only once
 
-		
-        
 
-            get_kvd(handle, KV_ClassName, szClassname, 31)
-			get_kvd(handle, KV_KeyName, szKeyname, 31)
-			get_kvd(handle, KV_Value, szValue, 31)
-			server_print("KVD %s :: %s :: %s ",szClassname , szKeyname, szValue)
 
-            /*
-			set_kvd(0, KV_ClassName, g_entity_doddetect)
-			set_kvd(0, KV_KeyName, g_kv_alliesparas)
-			set_kvd(0, KV_Value, g_cvar_alliesparas)
-			set_kvd(0, KV_fHandled, 0)
-			dllfunc(DLLFunc_KeyValue, ent, 0)
-			g_set_alliesparas = 1
-			return FMRES_SUPERCEDE
+
+// this variable will tell us whether the first KVD is fired to the hostage
+new bool:first_kvd = false
+if (ent != g_ent) { // hence this is the next hostage who recieves the KVD
+first_kvd = true // hence this is his first KVD
+g_ent = ent // our current hostage entity is the ent
+}
+
+static key[28]
+// retrieve the key name
+get_kvd(handle, KV_KeyName, key, 27)
+
+// this check will allow us to not fire this KVD multiple times, we need it only once
+
+
+
+
+get_kvd(handle, KV_ClassName, szClassname, 31)
+get_kvd(handle, KV_KeyName, szKeyname, 31)
+get_kvd(handle, KV_Value, szValue, 31)
+server_print("KVD %s :: %s :: %s ",szClassname , szKeyname, szValue)
+
+
+return FMRES_IGNORED
+/*
+set_kvd(0, KV_ClassName, g_entity_doddetect)
+set_kvd(0, KV_KeyName, g_kv_alliesparas)
+set_kvd(0, KV_Value, g_cvar_alliesparas)
+set_kvd(0, KV_fHandled, 0)
+dllfunc(DLLFunc_KeyValue, ent, 0)
+g_set_alliesparas = 1
+return FMRES_SUPERCEDE
 
 KVD info_doddetect
 KVD origin :: 1552 2960 -496
@@ -99,11 +101,26 @@ KVD info_doddetect
 KVD detect_allies_infinite :: 1
             */
 
-
-
-	
-
-	return FMRES_IGNORED
 }
 
 
+public forward_keyvalue2(handle, ent) {
+
+	if (!pev_valid(ent))
+		return FMRES_IGNORED;
+    new szClassname[32], szKeyname[32], szValue[32]
+
+    // Получаем данные
+    get_kvd(handle, KV_ClassName, szClassname, 31)
+
+
+    // Проверяем, что это оружие weapon_luger
+    if (equal(szClassname, "weapon_luger")) {
+        // Логируем данные
+		//get_kvd(handle, KV_KeyName, szKeyname, 31)
+		// get_kvd(handle, KV_Value, szValue, 31)
+        server_print("Weapon weapon_luger: Key = %s, Value = %s", szKeyname, szValue)
+    }
+
+    return FMRES_IGNORED
+}

@@ -9,7 +9,40 @@
 
 new idx_cweapon
 new DODCW_ID
-#define CWEAPON_NAME "weapon_mortar"
+new g_idx_player
+#define CWEAPON_NAME "weapon_tpist"
+
+
+// Linux extra offsets
+#define linux_diff_weapon 4
+#define linux_diff_player 5
+#define linux_diff_animation 4
+
+#define m_iClip 108  			// int-
+#define m_iDefaultAmmo 112  			// int-
+#define current_ammo 114  			// int-
+
+
+#define m_pPlayer 89 			// int returns owner's of weapon
+#define m_knifeItem 272			// prt ножа 
+#define m_pistolItem 273        //  ptr пистолета в инвентаре
+#define m_rifleItem 274        //  ptr основы в инвентаре
+#define m_nadeItem 276          //
+
+#define m_pActiveItem 278 		// возвращает Entity idx оружия в руках (не константу) + linux_diff_player
+#define m_rgpPlayerItems 81		// Weaponbox ячейки
+
+// Dod CbaseWeapon offsets 
+#define m_flNextPrimaryAttack 103 	// float
+#define m_flNextSecondaryAttack 104 // float
+#define m_flTimeWeaponIdle 105 	// float	
+#define m_flNextAttack 211 // float
+#define m_fInReload	111         //  Integer 
+#define m_fInAttack 113
+#define m_bUnderhand 120 // bool
+#define m_flWaitFinished 149 // 5
+
+#define m_iWeaponState 115		// IS BAZOOKA/PIAT/PSCHREK Shouldered
 
 public plugin_init()
 {
@@ -17,12 +50,24 @@ public plugin_init()
     register_clcmd("say /cw", "cw_run") 
 }
 
-public cw_run(idx_player)
+public plugin_precache()
 {
-    strip_user_weapons(idx_player)
+   
+    precache_model("models/mapmodels/hk_satchel.mdl");
+}
+public cw_run(idx_player)
+{   
+    g_idx_player = idx_player
+    
+    strip_user_weapons(idx_player);
 
-    //Add Custom Weapon Support
-	DODCW_ID = custom_weapon_add("Custom LogNameW",0 , CWEAPON_NAME)
+    /* тоже не много работает)) 
+    create_custom_weapon();
+    return 0;
+
+    */
+    //Add Custom Weapon Suppo   rt
+	DODCW_ID = custom_weapon_add("Custom LogNameW", 0 , CWEAPON_NAME)
     if (DODCW_ID < 0)
     {
         server_print("*** Ошибка создания кастомного оружия")
@@ -31,8 +76,39 @@ public cw_run(idx_player)
     server_print("*** new custom weapond created: %d", DODCW_ID)
 
     // give_item(idx_player, CWEAPON_NAME)  хуйня пока не сработала 
+    Ham_Weapon_Give_stocko(idx_player)
+    
+}
 
+public Ham_Weapon_Give_stocko(idx_player)
+{
+    // if(!equal(weapon,g_classnames[weapon_],7)) return 0;
 
+    new idx_wpn = engfunc(EngFunc_CreateNamedEntity,engfunc(EngFunc_AllocString, "shell_pschreck"));
+    if(!pev_valid(idx_wpn)) return 0;
+    server_print("*** engfunc(EngFunc_CreateNamedEntity,engfunc(EngFunc_AllocString,");
+    // engfunc(EngFunc_SetModel, idx_wpn, "models/mapmodels/hk_satchel.mdl")
+    // entity_set_string(idx_wpn, EV_SZ_classname, "weapon_luger");
+    set_pev(idx_wpn, pev_spawnflags, SF_NORESPAWN);
+    dllfunc(DLLFunc_Spawn, idx_wpn);
+
+    set_pdata_int(idx_wpn, m_iClip, 4);
+    set_pdata_int(idx_wpn, m_iDefaultAmmo, 4);
+    
+    entity_set_int(idx_wpn, EV_INT_iuser4, 44);
+
+    if(!ExecuteHamB(Ham_AddPlayerItem,idx_player,any:idx_wpn) || !ExecuteHamB(Ham_Item_AttachToPlayer, idx_wpn,any:idx_player))
+    {
+        if(pev_valid(idx_wpn)) set_pev(idx_wpn,pev_flags,pev(idx_wpn,pev_flags) & FL_KILLME);
+        return 0;
+    }
+    server_print("*** Ham_Weapon_Give_stocko: %d", idx_wpn)
+    return 1;
+
+}
+
+public create_prim_weapon_old(idx_player)
+{
     // Create new primary weapon entity
     idx_cweapon = engfunc(EngFunc_CreateNamedEntity,engfunc(EngFunc_AllocString, CWEAPON_NAME))
     if (idx_cweapon < 0)
@@ -80,65 +156,61 @@ public CWEAPON_NAME_attack_P()
     server_print("*** 4 attack registered")
 
 }
-/*
-    // Make sure entity was created
-    if(pev_valid(temp_weapon_entity))
-    {
-    // Check to see if weapon chosen is scoped enfield or scoped fg42 and make scoped if it is
-    if(weapon_class_id == 32 || weapon_class_id == 35)
-    set_pdata_int(temp_weapon_entity,115,1,4) // Set entity scope flag true
 
-    // Set entity position
-    new Float:origin[3]
-    pev(id,pev_origin,origin)
-    engfunc(EngFunc_SetOrigin,temp_weapon_entity,origin)
 
-    // Required as stated in HLSDK - Prevents two guns from showing (weaponbox)
-    set_pev(temp_weapon_entity,pev_spawnflags,SF_NORESPAWN)
 
-    // Spawn the entity
-    dllfunc(DLLFunc_Spawn,temp_weapon_entity)
+public create_custom_weapon()
+{   
 
-    // Store weapon entity ID for use with blocking other weapon entities
-    client_chosen_weapon_id[id] = temp_weapon_entity
-
-    // Decrement a weapon change from the client's counter
-    client_gun_changes[id]--
+    DODCW_ID = custom_weapon_add("weapon_tt33", 0 , "weapon_tt33")
+    new ent = create_entity("ammo_m1carbine")
+    server_print("*** 4 Disp %d", ent)
+    if (ent > 0) {
+        // Базовые свойства CBaseEntity
+        set_pev(ent, pev_classname, "weapon_tt33");
+        set_pev(ent, pev_movetype, MOVETYPE_NONE);
+        set_pev(ent, pev_solid, SOLID_TRIGGER);
         
-    // Set client chose a weapon for use with blocking other guns on the ground
-    client_block_state[id] = 1
+        // Свойства CBaseAnimating
+        set_pev(ent, pev_framerate, 1.0);
+        set_pev(ent, pev_sequence, 0);
+        
+        // Свойства CBasePlayerItem
+        // set_pev(ent, pev_impulse, WEAPON_SLOT)
+        set_pev(ent, pev_weaponmodel, "models/v_luger.mdl");
+        
+        // Свойства CBasePlayerWeapon
+        set_pdata_int(ent, m_iClip, 4);
+        set_pdata_int(ent, m_iDefaultAmmo, 4);
+        set_pdata_float(ent, m_flNextPrimaryAttack, 0.0);
+        set_pdata_float(ent, m_flNextSecondaryAttack, 0.0);
+        set_pdata_float(ent, m_flTimeWeaponIdle, 0.0);
+        
+        // Дополнительные свойства для DoD
+        set_pdata_int(ent, m_iWeaponState, 0);
+        set_pdata_int(ent, m_fInReload, 0);
+        
+        // Спавним entity
+        DispatchSpawn(ent)
+        dllfunc(DLLFunc_Spawn,ent)
+        server_print("*** 4 DispatchSpawn(ent) registered %d", ent)
+        fake_touch(ent, g_idx_player);
 
-    // Grab HL timestamp for determining the next time this client can get another gun
-    client_give_timer[id] = get_gametime() + get_pcvar_float(p_weapon_delay)
 
-    // Set that this client has chosen a weapon from the weapons mod. Used for calculating active classes.
-    client_give_switch[id] = 1
+        if(!ExecuteHamB(Ham_AddPlayerItem,g_idx_player,any:ent) || !ExecuteHamB(Ham_Item_AttachToPlayer, ent,any:g_idx_player))
+        {
+            if(pev_valid(ent)) set_pev(ent,pev_flags,pev(ent,pev_flags) & FL_KILLME);
+            return 0;
+        }
+        server_print("*** Ham_Weapon_Give_stocko: %d", ent)
+        //RegisterHam(Ham_Item_PostFrame, "weapon_tt33", "CW_Holster_registreed");
 
-    // Store client's last given class as the class chosen from the weapons mod. Used for calculating active classes.
-    client_last_given_class[id] = client_chosen_class[id]
-
-    // Set the client's last spawn class to the chosen weapon from the weapons mod. We
-    // do this so the correct class counts are made when a player respawns after using
-    // the weapons mod. Essentially we are just injecting the weapons mod given class
-    // into the spawn class count handler to save un-needed coding.
-    client_last_spawn_class[id] = client_chosen_class[id]
-
-
-
-
-  public give_weapon(id)
-  {
-   new ent = create_entity(WEAPON_OLD);
-   if(!is_valid_ent(ent)) return false;
-   entity_set_int(ent, EV_INT_spawnflags, SF_NORESPAWN);
-   entity_set_int(ent, EV_INT_impulse, WEAPON_KEY);
-   ExecuteHam(Ham_Spawn, ent);
-   if(!ExecuteHamB(Ham_AddPlayerItem, id, ent)) {
-      entity_set_int(ent, EV_INT_flags, FL_KILLME);
-      return true;
-   }
-   ExecuteHamB(Ham_Item_AttachToPlayer, ent, id);
-   return true;
+    }
+    
+    return ent
 }
 
-*/
+public CW_Holster_registreed()
+{
+    server_print("*** 4 CW_Holster_registreed");
+}

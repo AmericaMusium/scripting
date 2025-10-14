@@ -2,18 +2,15 @@
 #include <amxmisc>
 #include <fakemeta>
 #include <hamsandwich>
-#include <fakemeta_util>
 #include <dodx>
 #include <dodfun>
 #include <fun>
 #include <engine>
 
-// RUS Description: 
-// Плагин позволяет метнуть лопатку в противника и убить его 
-
 /* последня задача задача убрать выброс на клавишу G 
 */
-
+// Linux extra offsets
+#define linux_diff_weapon 4
 #define m_knifeItem 272
 //// Fakameta-engine interpriter
 /*
@@ -47,6 +44,8 @@ new cv_bldsprt // bonus boold splashes 1 on . 0 = off
 new cv_spspeed // speed fly spade
 new cv_sprot // rotation speed
 new cv_trail // trail for knife
+new cv_glow // fx glow model
+
 //// Function list 
 /*
 plugin_precache
@@ -60,6 +59,7 @@ Particle_Fx    // fx when you stab the wall hands with knife to make sparkle :D
 WeaponBox_Unstuck   // Back movetype after stack in wall
 WeaponBox_Sound // Repeats rotation sound whe knife flyes
 */
+
 // Playe's Array
 // многоуровневый массив с указателем
 enum _:PLAYER_DATA
@@ -103,6 +103,7 @@ public plugin_init()
 	cv_spspeed = register_cvar("sp_speed", "1600")
 	cv_sprot = register_cvar("sp_rotation","800")
 	cv_trail = register_cvar("fx_trail","1")
+	cv_glow = register_cvar("fx_glow","1")
 
 
 	g_maxpl = get_maxplayers()
@@ -113,14 +114,17 @@ public plugin_init()
 	RegisterHam(Ham_DOD_Item_CanDrop,KNIVES_NAMES[0],"WeaponBox_Drop_P")
 	RegisterHam(Ham_DOD_Item_CanDrop,KNIVES_NAMES[1], "WeaponBox_Drop_P")
 	RegisterHam(Ham_DOD_Item_CanDrop,KNIVES_NAMES[2],"WeaponBox_Drop_P")
-	RegisterHam(Ham_Spawn, "weaponbox", "WeaponBox_Spawn", 1)
+	//RegisterHam(Ham_Spawn, "weaponbox", "WeaponBox_Spawn", 1)
+	RegisterHam(Ham_Item_AddToPlayer, "weaponbox", "WeaponBox_Spawn", 1);
 	RegisterHam(Ham_Spawn, "player", "Player_Spawn_P", 1)
 	RegisterHam(Ham_Item_PreFrame,KNIVES_NAMES[0],"Ham_Weapon_P")
 	RegisterHam(Ham_Item_PreFrame,KNIVES_NAMES[1], "Ham_Weapon_P")
 	RegisterHam(Ham_Item_PreFrame,KNIVES_NAMES[2],"Ham_Weapon_P")
+    // RegisterHam(Ham_Touch, "fly_knife", "", 1)
 
 	// RegisterHam( Ham_Weapon_RetireWeapon,  ""
-	register_touch("fly_knife", "", "WeaponBox_Touch")
+	// register_touch("fly_knife", "", "WeaponBox_Touch")
+    //register_forward(FM_SetModel, "FakeMeta_SetModel", true);
 
 
 	//tempentity event - decal applied to world or entity // register event wall sprite
@@ -150,14 +154,12 @@ public DeathMsg_P()
 public CurWeapon_P(id)
 {
 	new weapon = read_data(2)
-	server_print("%d %d %d %d || %d ", DODW_AMERKNIFE, DODW_GERKNIFE, DODW_SPADE, DODW_BRITKNIFE, weapon)
 	if(weapon == DODW_AMERKNIFE || weapon == DODW_GERKNIFE || weapon == DODW_SPADE || weapon == DODW_BRITKNIFE)
-	{	
-		
+	{
 		// взять оружия индекс
 		g_arr[id][accept_throw] = true
 		g_arr[id][input_b] = true
-		g_arr[id][knifetype] = weapon
+		g_arr[id][knifetype] = weapon // ++ раз сдесь определяем какой тип и есть множество проверок. то потом чисто по кейсу.
 		// g_arr[id][knifename] = weapon
 
 		new en = get_pdata_cbase(id, m_knifeItem)
@@ -232,11 +234,44 @@ public WeaponBox_Drop_P(id)
 	}
 	return HAM_IGNORED
 }
+ 
 
 public WeaponBox_Spawn(weaponbox)
-{	
+{   
+	/// https://forums.alliedmods.net/showthread.php?t=348468 <<<___ здесь кое что древнее
+	new clsname[32]
+	// g_arr[id][knifetype]
+    new cbase = 81
+    server_print("WeaponBox_Spawn #d %d", weaponbox)
+	pev(weaponbox ,pev_classname, clsname, 31 )
+	server_print("WeaponBox_Spawn #clsname %s", clsname)
+	new Float:fOrigin[3]
+	pev(weaponbox, pev_origin, fOrigin)
+	new ent
 
-	g_FhSetModel = register_forward(FM_SetModel, "WeaponBox_Spawn2")
+	while( (ent = find_ent_in_sphere(ent, fOrigin, 0.1)) != 0)
+		{
+		if(is_valid_ent(ent))
+			{
+				pev(ent ,pev_classname, clsname, 31 )
+				server_print("WeaponBox_Touch FIND %s #%d", clsname, ent)
+			}
+		}
+	return HAM_IGNORED
+
+        for ( cbase = 81; cbase < 87; cbase++ ) 
+            {
+                new idx_wpn = get_pdata_cbase(weaponbox, cbase, linux_diff_weapon); // oofset 4
+				server_print("WeaponBox_Spawn #idx_wpn %d", idx_wpn)
+                if (is_valid_ent(idx_wpn))
+                {
+                    pev(idx_wpn ,pev_classname, clsname, 31 )
+                    server_print("WeaponBox_Touch classname %s", clsname)
+                    // WeaponBox_Spawn2(weaponbox)
+                }
+            }
+
+	
 
 	//client_print(0, print_chat, "[g_FhSetModel] %d for %d " , g_FhSetModel , weaponbox) ;
 	return HAM_IGNORED;
@@ -296,26 +331,30 @@ public WeaponBox_Retune(weaponbox)
 	set_pev(weaponbox,pev_avelocity,TumbleVector)	
 	//set_pev(weaponbox,pev_gravity, 0.1)
 
+	// +Glow Effect
+	if(get_pcvar_num(cv_glow) == 1)
+		set_rendering(weaponbox, kRenderFxGlowShell, random(255), random(255), random(255), kRenderNormal, random_num(1, 50));
 
+	// +Sound Effect
 	set_task(0.13, "WeaponBox_Sound", weaponbox)
 
+	// +Trail Effect
 	if(cv_trail)
 	{
 	message_begin(MSG_BROADCAST, SVC_TEMPENTITY)
 	write_byte(TE_BEAMFOLLOW)	// Temp entity type
 	write_short(weaponbox)		// entity
 	write_short(g_SpriteBlood)	// sprite index
-	write_byte(4)	// life time in 0.1's
+	write_byte(20)	// life time in 0.1's
 	write_byte(2)	// line width in 0.1's
 	write_byte(63)	// red (RGB)
 	write_byte(63)	// green (RGB)
 	write_byte(63)	// blue (RGB)
-	write_byte(200)	// brightness 0 invisible, 255 visible
+	write_byte(100)	// brightness 0 invisible, 255 visible
 	message_end()
 	}
 }
-
-public WeaponBox_Touch(id_knife,id_target)
+public WeaponBox_Touch(id_knife, id_target)
 {	
 	// Register Universal data
 	new Float:f_Ori[3] 
@@ -325,7 +364,9 @@ public WeaponBox_Touch(id_knife,id_target)
 	entity_get_vector(id_knife,EV_VEC_velocity,f_VelVec)
 	FVecIVec(f_Ori,i_Ori)
 	new id_owner = pev(id_knife, pev_owner)
-
+    new cls[32]
+	pev(id_knife ,pev_classname, cls, 31 )
+    server_print("WeaponBox_Touch classname %s", cls)
 	switch(g_arr[id_owner][knifetype])
 	{
 		case DODW_AMERKNIFE:
@@ -339,13 +380,13 @@ public WeaponBox_Touch(id_knife,id_target)
 		}
 		case DODW_SPADE:
 		{
-			engfunc(EngFunc_SetModel, id_knife, KNIVES_MODELS[2])  // need to replace weaponbox model
+			//engfunc(EngFunc_SetModel,id_knife, KNIVES_MODELS[2])  // need to replace weaponbox model
+            entity_set_string(id_knife, EV_SZ_model, KNIVES_MODELS[2]);
 		}
 		case DODW_BRITKNIFE:
 		{
 			// g_arr[id_owner][knifetype] = 1  // need to register hud kill message icon
 		}
-		default:engfunc(EngFunc_SetModel, id_knife, KNIVES_MODELS[2]) 
 	}
 	if(id_owner==id_target) return PLUGIN_CONTINUE	
 	// Start Difference touch
