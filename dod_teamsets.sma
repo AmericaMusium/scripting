@@ -76,8 +76,7 @@ public plugin_init()
 public plugin_precache() 
 {
 	precache_model("models/player/ussr-inf/ussr-inf.mdl")  
-	precache_model("models/player/ussr-inf/ussr-infT.mdl")  
-
+	precache_model("models/player/ussr-inf/ussr-infT.mdl") 
 }
 public Player_Call_USSR(id)
 {

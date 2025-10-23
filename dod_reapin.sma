@@ -9,6 +9,11 @@
 #include <okapi>
 #include <reapi>
 
+/// переопределяем смещения 
+// Linux extra offsets
+#define linux_diff_weapon 4
+#define linux_diff_player 5
+#define linux_diff_animation 4
 
 new g_idx_player 
 new g_idx_camera
@@ -29,11 +34,10 @@ public plugin_init()
 
 
     server_print("ReAPI Runs :::::: ")
-    // RegisterHookChain( RH_PF_precache_sound_I, "OnPlayerKilled", 1);
-
     register_think("iron_sight", "iron_sight_think")
 
     register_clcmd("say ss","set_Vmodel_")
+    register_event("CurWeapon", "CurWeapon_Post_Check", "be", "1=1");
 }
 
 public set_Vmodel_(idx_player)
@@ -65,15 +69,10 @@ public target_create(idx_player)
         set_pev(idx_target, pev_solid, SOLID_NOT);   
         set_pev(idx_target, pev_movetype, MOVETYPE_NONE);
         set_pev(idx_target, pev_owner, idx_player);
-        // Если нужно что бы разбивалось от пули , надо менять на 
-        // SOLID_BBOX и менять точку старта, а то задевае игрока
-        // set_pev(idx_target, pev_health, 1.0);
-        // set_pev(idx_target, pev_takedamage, DAMAGE_YES);
+
         
         entity_set_edict(idx_target, EV_ENT_owner, idx_player);
-        // static Float:vVelocity[3]
-        // velocity_by_aim(id, 300, vVelocity)
-        // set_pev(idx_target, pev_velocity, vVelocity)
+
         set_pev(idx_target, pev_origin, fOrigin);
         engfunc(EngFunc_SetModel, idx_target, "models/v_garand.mdl")// 
         if(!pev_valid(idx_target)) 
@@ -83,8 +82,6 @@ public target_create(idx_player)
 
         
         attach_view(idx_player, idx_target)
-        // set_pev(idx_target, pev_nextthink, get_gametime() + 1.0);
-
 
         g_idx_player = idx_player
         g_idx_camera = idx_target
@@ -126,4 +123,15 @@ public iron_sight_think()
     set_pev(g_idx_camera, pev_v_angle, flAngles)
 
     set_pev(g_idx_camera, pev_nextthink, halflife_time() + 0.01)
+}
+
+
+
+public CurWeapon_Post_Check(id_owner)
+{	
+    if (!is_user_alive(id_owner)) return;
+    new valie = get_pdata_int(id_owner, m_iWeaponVolume, linux_diff_player);
+    new m_iWeaponVolume = 234
+    
+    server_print("VALIE d %d f %f s %s",  valie,valie,valie)
 }

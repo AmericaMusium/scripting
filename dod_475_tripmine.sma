@@ -20,31 +20,31 @@
 
 /// CLASSES
 // US Allies
-#define cl_garand 1
-#define cl_m1carb 2
-#define cl_thomp 3
-#define cl_greesg 4
-#define cl_springf 5
-#define cl_bar 6
-#define cl_30cal 7
-#define cl_bazooka 8
+#define DODCL_garand 1
+#define DODCL_m1carb 2
+#define DODCL_thomp 3
+#define DODCL_greesg 4
+#define DODCL_springf 5
+#define DODCL_bar 6
+#define DODCL_30cal 7
+#define DODCL_bazooka 8
 // Axis 
-#define cl_k98 10
-#define cl_k43 11
-#define cl_mp40 12
-#define cl_stg44 13
-#define cl_k98s 14
-#define cl_fg42 15
-#define cl_fg42s 16
-#define cl_mg34 17
-#define cl_mg42 18
-#define cl_panzerschreck 19
+#define DODCL_k98 10
+#define DODCL_k43 11
+#define DODCL_mp40 12
+#define DODCL_stg44 13
+#define DODCL_k98s 14
+#define DODCL_fg42 15
+#define DODCL_fg42s 16
+#define DODCL_mg34 17
+#define DODCL_mg42 18
+#define DODCL_panzerschreck 19
 // brit 
-#define cl_enfield 21
-#define cl_sten 22
-#define cl_scenfield 23
-#define cl_bren 24
-#define cl_piat 25
+#define DODCL_enfield 21
+#define DODCL_sten 22
+#define DODCL_scenfield 23
+#define DODCL_bren 24
+#define DODCL_piat 25
 
 #define extime 1.0
 
@@ -137,13 +137,13 @@ public Satchel_Equip(id)
 
 	/*
 	new myclass = dod_get_user_class(id)
-	if (myclass == cl_garand || myclass == cl_m1carb || myclass == cl_k98 || myclass == cl_k43 )
+	if (myclass == DODCL_garand || myclass == DODCL_m1carb || myclass == DODCL_k98 || myclass == DODCL_k43 )
 	{	
 		g_satchel_have[id] = 2
 		client_print(id, print_chat, "You have 2 satchels , to set: say /plantsatchel", myclass)
 	}
 		
-	else if (myclass == cl_bazooka || myclass == cl_panzerschreck || myclass == cl_piat)
+	else if (myclass == DODCL_bazooka || myclass == DODCL_panzerschreck || myclass == DODCL_piat)
 	{	
 		g_satchel_have[id] = 3
 		client_print(id, print_chat, "You have 3 satchels , to set: say /plantsatchel", myclass)

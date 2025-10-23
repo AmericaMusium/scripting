@@ -25,7 +25,7 @@ public map_market_test(idx_player)
 {  
     new name[32]
 
-    get_pdata_int(idx_player, m_iMapMarker, 5);
+    new mmark = get_pdata_int(idx_player, m_iMapMarker, 5);
     get_user_name(idx_player, name, charsmax(name))
-   client_print(idx_player, print_chat,"m_iMapMarker %d name %s, 
+    client_print(0, print_chat,"m_iMapMarker %d name %s", mmark , name);
 }

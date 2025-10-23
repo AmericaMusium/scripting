@@ -40,9 +40,13 @@ new g_player_dt[33][PLAYER_DATA]
 public plugin_init()
 {
 	register_plugin("NADE ACTIVATOR", "0.0", "America")
+	
 	register_event("CurWeapon","CurWeapon_P","be", "1=1") // процедура не обязятельная (лишняя)
 	RegisterHam(Ham_Weapon_PrimaryAttack,	"weapon_stickgrenade",	"Nade_attack_P", true);
 	RegisterHam(Ham_Weapon_PrimaryAttack,	"weapon_handgrenade",	"Nade_attack_P", true);
+	// малое дополнение 
+	
+	RegisterHam(Ham_Spawn, "weapon_stickgrenade_ex", "On_Handgrenade_Spawned", 1)
 }
 
 public CurWeapon_P(id)
@@ -50,7 +54,7 @@ public CurWeapon_P(id)
 	new weapon = read_data(2)
 	if(weapon == DODW_HANDGRENADE || DODW_STICKGRENADE || DODW_MILLS_BOMB)
 	{
-	// взять гранаты индекс
+	// взять индекс гранаты
 	g_player_dt[id][nade] = get_pdata_cbase(id, m_nadeItem, 5);
 	}
 	return PLUGIN_CONTINUE
@@ -70,7 +74,7 @@ public Nade_attack_P(id_ent)
 				ExecuteHam(Ham_TakeDamage, id_owner, id_ent , id_ent , 400.0 , DMG_BULLET)
 				return PLUGIN_CONTINUE
 			}
-				// user_silentkill(id_owner)
+			// user_silentkill(id_owner)
 			return PLUGIN_CONTINUE
 		}
 		else
@@ -103,4 +107,9 @@ public grenade_throw_P(id_nade)
 	new id_owner = pev( id_nade, pev_owner)
 	set_pev(id_nade, pev_dmgtime, g_player_dt[id_owner][ntimer])
 	return PLUGIN_CONTINUE
+}
+
+public On_Handgrenade_Spawned(idx_nade)
+{
+	server_print(" weapon_handgrenade_ex DETECYED")
 }

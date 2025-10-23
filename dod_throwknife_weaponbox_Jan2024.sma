@@ -315,7 +315,7 @@ public WeaponBox_Retune(weaponbox)
 	}
 }
 
-public WeaponBox_Touch(id_knife,id_target)
+public WeaponBox_Touch(id_knife, id_target)
 {	
 	// Register Universal data
 	new Float:f_Ori[3] 
@@ -475,7 +475,7 @@ public WeaponBox_Touch(id_knife,id_target)
 		message_end()
 		emit_sound(id_knife, CHAN_AUTO, g_ThrowHitwallSound, 0.8, 1.0, 0, PITCH_NORM)
 
-
+		/*
 		if(equal(clT,"func_breakable")) 
 		{
 			new tgn[32]
@@ -492,6 +492,7 @@ public WeaponBox_Touch(id_knife,id_target)
 			}
 			//client_print(0, print_chat, "[FUNCBREAK] %s %s ",clT, tgn )
 		}
+		*/
 		set_pev(id_knife, pev_classname, "weaponbox")
 		set_pev(id_knife, pev_avelocity,{60.0 , 50.0 , 150.0})
 		set_pev(id_knife, pev_velocity,{60.0 , 50.0 , 50.0})

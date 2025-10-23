@@ -114,7 +114,7 @@ public plugin_init()
 	RegisterHam(Ham_DOD_Item_CanDrop,KNIVES_NAMES[0],"WeaponBox_Drop_P")
 	RegisterHam(Ham_DOD_Item_CanDrop,KNIVES_NAMES[1], "WeaponBox_Drop_P")
 	RegisterHam(Ham_DOD_Item_CanDrop,KNIVES_NAMES[2],"WeaponBox_Drop_P")
-	//RegisterHam(Ham_Spawn, "weaponbox", "WeaponBox_Spawn", 1)
+	RegisterHam(Ham_Spawn, "weaponbox", "WeaponBox_Spawn", 1)
 	RegisterHam(Ham_Item_AddToPlayer, "weaponbox", "WeaponBox_Spawn", 1);
 	RegisterHam(Ham_Spawn, "player", "Player_Spawn_P", 1)
 	RegisterHam(Ham_Item_PreFrame,KNIVES_NAMES[0],"Ham_Weapon_P")
@@ -241,38 +241,21 @@ public WeaponBox_Spawn(weaponbox)
 	/// https://forums.alliedmods.net/showthread.php?t=348468 <<<___ здесь кое что древнее
 	new clsname[32]
 	// g_arr[id][knifetype]
-    new cbase = 81
-    server_print("WeaponBox_Spawn #d %d", weaponbox)
+	new cbase = 81
+	server_print("WeaponBox_Spawn #d %d", weaponbox)
 	pev(weaponbox ,pev_classname, clsname, 31 )
 	server_print("WeaponBox_Spawn #clsname %s", clsname)
 	new Float:fOrigin[3]
 	pev(weaponbox, pev_origin, fOrigin)
-	new ent
 
-	while( (ent = find_ent_in_sphere(ent, fOrigin, 0.1)) != 0)
-		{
-		if(is_valid_ent(ent))
-			{
-				pev(ent ,pev_classname, clsname, 31 )
-				server_print("WeaponBox_Touch FIND %s #%d", clsname, ent)
-			}
-		}
-	return HAM_IGNORED
 
-        for ( cbase = 81; cbase < 87; cbase++ ) 
-            {
-                new idx_wpn = get_pdata_cbase(weaponbox, cbase, linux_diff_weapon); // oofset 4
-				server_print("WeaponBox_Spawn #idx_wpn %d", idx_wpn)
-                if (is_valid_ent(idx_wpn))
-                {
-                    pev(idx_wpn ,pev_classname, clsname, 31 )
-                    server_print("WeaponBox_Touch classname %s", clsname)
-                    // WeaponBox_Spawn2(weaponbox)
-                }
-            }
-
-	
-
+	new idx_owner = entity_get_edict(weaponbox, EV_ENT_owner);
+	new ClsName[32];
+	new bx_pContainingEntity = entity_get_edict2(weaponbox, EV_ENT_pContainingEntity );
+	entity_get_string(idx_owner ,EV_SZ_classname, ClsName, 31);
+	server_print(" owner of weaponbox is =  %s and %d", ClsName, bx_pContainingEntity);
+	entity_get_string(bx_pContainingEntity ,EV_SZ_classname, ClsName, 31);
+	server_print(" bx_pContainingEntity of weaponbox is =  %s and %d", ClsName, bx_pContainingEntity);
 	//client_print(0, print_chat, "[g_FhSetModel] %d for %d " , g_FhSetModel , weaponbox) ;
 	return HAM_IGNORED;
 

@@ -24,14 +24,14 @@
 const WEAPON_CROSSHAIR_FOV = 65;
 const WEAPON_DEFAULT_FOV = 90;
 
-new const IRONOPTICModel98k[] = "models/red/v_98kIO2.mdl" // ������
+new const IRONOPTICModel98k[] = "models/v_sten.mdl" // ������
 new g_scopetest
 new const Hudleftsp[] = "sprites/glow03.spr" // SPTIRE
 new const g_exp_spr_name[] = "sprites/explosion1.spr" //������ ������4
 new gl_iszAllocString_ModelZoom;
 
 
-new const WEAPON_MODEL_ZOOM[] = "models/red/v_riflesight.mdl";
+new const WEAPON_MODEL_ZOOM[] = "models/v_garand.mdl";
 new exp_sprite
 new expl_type = 1
 static bytescope = 1
@@ -50,7 +50,7 @@ public plugin_init() {
 	register_clcmd("say 333", "hideweaponfunchui3") //������� ��� ��������
 	register_clcmd("say 444", "hud_InitHUD") //������� ��� ��������
 	//register_clcmd("say expl", "test_explission") // взрыв TE_EXPL_в точке куда смотрит игрок
-
+	
 
 	// register_event( "Crosshair", "reg_notice", "be" )
 	

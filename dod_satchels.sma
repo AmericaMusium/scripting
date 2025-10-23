@@ -222,6 +222,7 @@ public Satchel_create(id)
 	return PLUGIN_HANDLED
 } 
 
+
 public Satchel_Damage(id_satchel)
 {
 	if(!pev_valid(id_satchel)) 

@@ -6,7 +6,7 @@
 #include <engine>
 
 // m_pszSavedWeaponModel проверить
-BXINT_modelindex = entity_get_int(ent,EV_INT_modelindex)
+// BXINT_modelindex = entity_get_int(ent,EV_INT_modelindex)
 
 new g_msgCurWeapon, g_msgScreenFade, g_msgScreenShake, g_msgAmmoX
 

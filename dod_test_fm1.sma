@@ -44,7 +44,7 @@ public plugin_precache() {
 public plugin_init() {
 	register_plugin("DOD FM TEST", "0.0", "00")
  
-    // register_forward(FM_ServerPrint, "forward_FM_ServerPrint") // works
+    register_forward(FM_ServerPrint, "forward_FM_ServerPrint") // works
     register_forward(FM_AddToFullPack, "forward_FM_AddToFullPack")
     
 

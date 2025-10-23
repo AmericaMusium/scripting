@@ -55,8 +55,9 @@ public plugin_init()
 
 
 
-	set_task(1.0, "force_startgame" )
-	set_task(4.0, "force_startgame" )
+	set_task(3.0, "force_startgame" )
+	set_task(5.0, "force_startgame" )
+	set_task(6.0, "force_startgame" )
 	register_clcmd("say /axiswin", "force_axis_win")
 
 
@@ -67,17 +68,20 @@ public plugin_init()
 public force_startgame()
 {	
 	server_print(":: :: :: Round Fast Started " )
-	ExecuteHamB(Ham_Use, g_score_ent, g_master_ent, g_master_ent, 3, NEVER)
+	// ExecuteHamB(Ham_Use, g_score_ent, g_master_ent, g_master_ent, 3, NEVER) // originsl
+	/// 
+	ExecuteHam(Ham_Use, g_score_ent, g_master_ent, g_master_ent, 3, NEVER)
+
 	force_fast_spawn()
 	//pause("ad", pluginname)
 }
 
 public force_fast_spawn()
 {	
-	new float:gtime = get_gametime()
-	for(new id = 0 ; id < get_maxplayers() ; id++)
+	new Float:gtime = get_gametime()
+	for(new id = 1 ; id < get_maxplayers() + 1 ; id++)
 	{
-	set_pev(id,pev_nextthink, gtime + 2.0)
+		set_pev(id,pev_nextthink, gtime + 2.0)
 	}
 }
 
@@ -87,27 +91,27 @@ public force_fast_spawn()
 
 public client_putinserver(id)
 {
-new namearray[32]
-get_user_name(id, namearray, 31)
-server_print("[DOD FAST SPAWN] %s  connected as %d ", namearray, id )
+	new namearray[32]
+	get_user_name(id, namearray, 31)
+	//server_print("[DOD FAST SPAWN] %s  connected as %d ", namearray, id )
 
-if (equal(namearray, "Officer_Mymune"))
-{
-	server_print("[DOD FAST SPAWN] if %s  connected as %d ", namearray, id )
-	set_task(2.0, "fn_joinTeam1", id )
-}
-if(equal(namearray, "America"))
-{	
-	server_print("[DOD FAST SPAWN] if %s  connected as %d ", namearray, id )
-	set_task(1.0, "fn_joinTeam2", id )
-}
+	if (equal(namearray, "Officer_Mymune"))
+	{
+		//server_print("[DOD FAST SPAWN] if %s  connected as %d ", namearray, id )
+		set_task(2.0, "fn_joinTeam1", id )
+	}
+	if(equal(namearray, "America"))
+	{	
+		//server_print("[DOD FAST SPAWN] if %s  connected as %d ", namearray, id )
+		set_task(1.0, "fn_joinTeam2", id )
+	}
 
 }
 
 
 public fn_joinTeam1(id)
 {
-server_print("[DOD FAST SPAWN] set taks complete for %d ",  id )
+// server_print("[DOD FAST SPAWN] set taks complete for %d ",  id )
 client_cmd(id, "jointeam 1")
 client_cmd(id, "cls_garand")
 Fastrespawn_1(id)
@@ -126,7 +130,7 @@ public Fastrespawn_1(id)
 {
 if (!is_user_bot(id))
 {	
-	new float:gtime = get_gametime()
+	new Float:gtime = get_gametime()
 	set_pev(id,pev_nextthink, gtime + 10.0)
 	//set_task(1.0 ,"fwdPlayerKilled", id )
 }

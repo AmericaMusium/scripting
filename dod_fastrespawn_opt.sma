@@ -1,6 +1,7 @@
 #include <amxmodx>
 #include <hamsandwich>
 #include <fakemeta>
+#include <engine>
 
 #define SPAWN_TIME 2.0
 new msg_ResetHud
@@ -26,17 +27,26 @@ public on_Ham_Killed_P(idx_player)
 
 public player_cheker(idx_player)
 {	
-    if (!is_user_bot(idx_player)){
+    if (!is_user_bot(idx_player) && is_user_connected(idx_player))
+        {
         new team_case = get_user_team(idx_player)
         switch (team_case)
         {
             case 1: player_fast_respawn(idx_player)
-            case 2: player_fast_respawn(idx_player)			
+            case 2: player_fast_respawn(idx_player)
+            default: 	
+            {
+                return;
+                /*
+                entity_set_int(idx_player, EV_INT_team, 1);	
+                player_fast_respawn(idx_player);
+                */
+            }	
         }
-        return
+        return;
     }
 	else
-	    return
+	    return;
 }
 
 

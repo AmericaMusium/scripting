@@ -14,7 +14,6 @@
 #define MAX_TEAMS 3
 #define MAX_MODELNAME 64
 
-
 #define MAXSTUDIOTRIANGLES 20000 // TODO: tune this
 #define MAXSTUDIOVERTS 2048 // TODO: tune this
 #define MAXSTUDIOSEQUENCES 2048 // total animation sequences -- KSH incremented
@@ -30,30 +29,24 @@
 #define MAXSTUDIOPIVOTS 256
 #define MAXSTUDIOCONTROLLERS 8
 
-
-
 //menu const buttons
 #define BTN_MENU_BACK -10
 #define BTN_MENU_SAVE -11
 #define BTN_MENU_RESET -12
 
-/*
-создать мнимую энтити на спауне с моделю равной игроку
-у модели определить индекс pev_body временный и постоянный.
-если меню сохраняется , то передать индекс игроку
-*/
 
 enum _:m_data
 {
-    id,
-    owner,
-	available_models,
-   	current_model_list_id, // starts from Zero (first is 0)
-	body_groups,
-	body_size[MAX_BODY_GROUPS_NUMS],
-	body_selected[MAX_BODY_GROUPS_NUMS],
-	current_body_index
+        id,
+        owner,
+        available_models,
+        current_model_list_id, // starts from Zero (first is 0)
+        body_groups,
+        body_size[MAX_BODY_GROUPS_NUMS],
+        body_selected[MAX_BODY_GROUPS_NUMS],
+        current_body_index
 }
+
 new g_costume_ent[MAX_TEAMS][m_data]
 new g_Precached_Player_Models_List[MAX_TEAMS][MAX_MODELS_IN_TEAM][MAX_MODELNAME]
 new g_team_mdl_file[MAX_MODELS_IN_TEAM*MAX_TEAMS][MAX_MODELNAME] // array for saving precached mdl file
@@ -72,16 +65,12 @@ public plugin_init()
 {
 	register_plugin("DOD Customize Models", "0.0", "America")
 	RegisterHam(Ham_Spawn, "player", "Ham_player_spawn_post", 1) // post
-	register_clcmd("say /customize", "customize_players_model") 
+	register_clcmd("say 12", "customize_players_model") 
 
-	set_task(3.0 , "create_g_costume_ent" )
+	set_task(3.0 , "g_costume_ent_create" )
 
 	g_player_to_g_costume_ent[0] = 0
 }
-
-
-
-
 
 public FM_PrecacheModel_P(const szFile[])
 {   
@@ -89,12 +78,12 @@ public FM_PrecacheModel_P(const szFile[])
 	{
 	g_models_precached++
 	format(g_team_mdl_file[g_models_precached], charsmax(g_team_mdl_file[]), "%s", szFile)
-	if ( containi(szFile, "/us-") != -1 || containi(szFile, "/brit-") != -1 )
+	if ( containi(szFile, "/us-") != -1 || containi(szFile, "/brit-") != -1 ||  containi(szFile, "/ussr") != -1)
 	{
 		format( g_Precached_Player_Models_List[ALLIES][g_costume_ent[ALLIES][available_models]] , MAX_MODELNAME-1, "%s" ,  szFile)
 		g_costume_ent[ALLIES][available_models]++
 	}
-	if (containi(szFile, "/axis") != -1)
+	if (containi(szFile, "/axis-") != -1 )
 	{
 		format( g_Precached_Player_Models_List[AXIS][g_costume_ent[AXIS][available_models]] , MAX_MODELNAME-1, "%s" ,  szFile)
 		g_costume_ent[AXIS][available_models]++
@@ -117,87 +106,83 @@ public Ham_player_spawn_post(idx_player)
 }
 
 
-
-
-public create_g_costume_ent()
+public g_costume_ent_create()
 {	
 	// start creating g_custume_ent for every team
 	for (new i_team = 1; i_team < 3; i_team++ )
 	{	
-
-	if( g_costume_ent[i_team][available_models] > 0 )
-	{
-		// searching spawn ent for get origin to assign for g_custume_ent
-		new search_classname[32] 
-		new Float:f_Origin[3]
-		switch (i_team)
+		if( g_costume_ent[i_team][available_models] > 0 )
 		{
-			case ALLIES:{
-				format(search_classname, 31, "info_player_allies" )
-			}
-			case AXIS:{
-				format(search_classname, 31, "info_player_axis" )
-			}
-		}
-		new ent = -1
-		ent = find_ent_by_class(ent, search_classname)
-		if(ent != -1)
-		{	
-			pev(ent, pev_origin, f_Origin)	
-			server_print( "[create_g_costume_ent] search_classname %s id %d " , search_classname , ent )
-			//remove_entity(ent)
-			new next_ent = -1
-			next_ent = find_ent_by_class(ent, search_classname)
-			if(next_ent != -1)
-				{
-					server_print( "[create_g_costume_ent] 2222222222222 search_classname %s id %d " , search_classname , next_ent )
-					remove_entity(ent)
+			// searching spawn ent for get origin to assign for g_custume_ent
+			new search_classname[32] 
+			new Float:f_Origin[3]
+			switch (i_team)
+			{
+				case ALLIES:{
+					format(search_classname, 31, "info_player_allies" )
 				}
-		
-		}
-
-		//f_Origin[2] += 50.0
-
-		// create g_costume_ent 
-		new idx_g_costume_ent = create_entity("info_target")
-		set_pev(idx_g_costume_ent, pev_solid, SOLID_TRIGGER)   
-		set_pev(idx_g_costume_ent, pev_movetype, MOVETYPE_FLY)
-		// set_pev(idx_g_costume_ent, pev_gravity, 1.0)
-		// entity_set_size(idx_g_costume_ent, Float:{-16.0, -16.0, -36.0}, Float:{16.0, 16.0, 16.0}) 
-		set_pev(idx_g_costume_ent, pev_avelocity, Float:{0.0, 10.0, 0.0})	
-
-		set_pev(idx_g_costume_ent, pev_effects, EF_DIMLIGHT) 
-
-		//
-
-		set_pev(idx_g_costume_ent, pev_origin, f_Origin)
-		
-		if(!pev_valid(idx_g_costume_ent)) 
-		{
-			server_print("!!!!!!!!!!!!!! [create_g_costume_ent] g_costume_ent not valid")
-			return PLUGIN_CONTINUE  
-		}
-		
-		g_costume_ent[i_team][id] = idx_g_costume_ent 
-		g_costume_ent[i_team][owner] = 0
-		g_costume_ent[i_team][current_model_list_id] = 0 //random_num( 0, g_costume_ent[i_team][available_models] ) // start from zero
-		g_costume_ent[i_team][current_body_index] = 0
+				case AXIS:{
+					format(search_classname, 31, "info_player_axis" )
+				}
+			}
+			new ent = -1
+			ent = find_ent_by_class(ent, search_classname)
+			if(ent != -1)
+			{	
+				pev(ent, pev_origin, f_Origin)	
+				server_print( "[g_costume_ent_create] search_classname %s id %d " , search_classname , ent )
+				//remove_entity(ent)
+				new next_ent = -1
+				next_ent = find_ent_by_class(ent, search_classname)
+				if(next_ent != -1)
+					{
+						server_print( "[g_costume_ent_create] 2222222222222 search_classname %s id %d " , search_classname , next_ent )
+						remove_entity(ent)
+					}
 			
-		server_print( "++++++++++[create_g_costume_ent] idx_g_costume_ent %d success for %d , %d", idx_g_costume_ent, i_team, g_costume_ent[i_team][id])
+			}
 
-		engfunc(EngFunc_SetModel, g_costume_ent[i_team][id],  g_Precached_Player_Models_List[i_team][g_costume_ent[i_team][current_model_list_id]]) 
-		entity_set_int(idx_g_costume_ent, EV_INT_sequence, 131) //������ �������� ����
-		entity_set_float(idx_g_costume_ent, EV_FL_animtime, get_gametime()) //������ ����� ��������
-		entity_set_float(idx_g_costume_ent, EV_FL_framerate, 1.0) //������ �������� ��������
-		entity_set_float(idx_g_costume_ent, EV_FL_frame, 0.0) //������ ��������� ����
-		//
-		server_print("model for fake ent: %s", g_Precached_Player_Models_List[i_team][g_costume_ent[i_team][current_model_list_id]])
+			//f_Origin[2] += 50.0
+
+			// create g_costume_ent 
+			new idx_g_costume_ent = create_entity("info_target")
+			set_pev(idx_g_costume_ent, pev_solid, SOLID_TRIGGER)   
+			set_pev(idx_g_costume_ent, pev_movetype, MOVETYPE_FLY)
+			// set_pev(idx_g_costume_ent, pev_gravity, 1.0)
+			// entity_set_size(idx_g_costume_ent, Float:{-16.0, -16.0, -36.0}, Float:{16.0, 16.0, 16.0}) 
+			set_pev(idx_g_costume_ent, pev_avelocity, Float:{0.0, 10.0, 0.0})	
+
+			set_pev(idx_g_costume_ent, pev_effects, EF_DIMLIGHT) 
+
+			//
+
+			set_pev(idx_g_costume_ent, pev_origin, f_Origin)
+			
+			if(!pev_valid(idx_g_costume_ent)) 
+			{
+				server_print("!!!!!!!!!!!!!! [g_costume_ent_create] g_costume_ent not valid")
+				return PLUGIN_CONTINUE  
+			}
+			
+			g_costume_ent[i_team][id] = idx_g_costume_ent 
+			g_costume_ent[i_team][owner] = 0
+			g_costume_ent[i_team][current_model_list_id] = 0 //random_num( 0, g_costume_ent[i_team][available_models] ) // start from zero
+			g_costume_ent[i_team][current_body_index] = 0
+				
+			server_print( "++++++++++[g_costume_ent_create] idx_g_costume_ent %d success for %d , %d", idx_g_costume_ent, i_team, g_costume_ent[i_team][id])
+
+			engfunc(EngFunc_SetModel, g_costume_ent[i_team][id],  g_Precached_Player_Models_List[i_team][g_costume_ent[i_team][current_model_list_id]]) 
+			entity_set_int(idx_g_costume_ent, EV_INT_sequence, 132) //  
+			entity_set_float(idx_g_costume_ent, EV_FL_animtime, get_gametime()) //  
+			entity_set_float(idx_g_costume_ent, EV_FL_framerate, 1.0) //  
+			entity_set_float(idx_g_costume_ent, EV_FL_frame, 0.0) //  
+			//
+			server_print("model for fake ent: %s", g_Precached_Player_Models_List[i_team][g_costume_ent[i_team][current_model_list_id]])
+			}
+		else
+		{
+			server_print( "!!! [g_costume_ent_create] ! Models for team #%d NOT available (ALLIES == 1 ; AXIS == 2)" , i_team)
 		}
-	else
-	{
-		server_print( "!!! [create_g_costume_ent] ! Models for team #%d NOT available (ALLIES == 1 ; AXIS == 2)" , i_team)
-	}
-
 	}
 	return PLUGIN_CONTINUE
 }
@@ -206,18 +191,18 @@ public create_g_costume_ent()
 
 
 public customize_players_model(idx_player)
-{
-	menu_allmodels_browser(idx_player)
-	// set_task( 0.2 , "hud_updater" , idx_player, "",0, "b")
+{	
 
-	
+	// проверить наличие pev_bodyIndex у игрока, если оно есть, то назначить для текушей g_costume_ent
+	menu_allmodels_browser(idx_player)
+	// set_task( 0.2 , "hud_updater" , idx_player, "",0, "b")	
 }
 
 
 public menu_allmodels_browser(idx_player)
 {	
 	// start checking is ent exists, is it free for customize and is it have available models 
-	// ( but thrid not need) look at public create_g_costume_ent()  it was checked 
+	// ( but thrid not need) look at public g_costume_ent_create()  it was checked 
 	new i_team = pev( idx_player, pev_team )
 	if( !pev_valid(g_costume_ent[i_team][id]) || g_costume_ent[i_team][available_models] < 1)
 		{
@@ -244,7 +229,7 @@ public menu_allmodels_browser(idx_player)
 	menu_additem( menu_models, "\w Save current uniform and model", "-11", 0)
 	menu_additem( menu_models, "\y Reset and delete unfiform and model", "-12", 0)
 
-	menu_setprop( menu_models, MPROP_EXIT, MEXIT_ALL );
+	// menu_setprop( menu_models, MPROP_EXIT, MEXIT_NEVER );
 	menu_display( idx_player, menu_models, 0 );
 
 	return PLUGIN_CONTINUE
@@ -253,59 +238,60 @@ public menu_allmodels_browser(idx_player)
 
 public menu_allmodels_click( idx_player, menu, item )
 {
-	if (item == MENU_EXIT){
+	if (item == MENU_EXIT)
+	{
 		server_print("exit pressed")
 		menu_destroy(menu)
 		return PLUGIN_CONTINUE
 	}
-	new i_team = pev( idx_player, pev_team )
-	new m_Data[64], m_Name[64], i_Access, i_Callback
-	menu_item_getinfo(menu, item, i_Access, m_Data, charsmax(m_Data), m_Name, charsmax(m_Name), i_Callback)
-	// menu_item_getinfo(menu, item, i_Access, m_Data, charsmax(m_Data), m_Name, charsmax(m_Name), i_Callback)
 
-	server_print("[menu_allmodels_click] item::index_current_model_list %d m_name::mdl name %s data:: empty sz %s ",item, m_Name, m_Data)
-	/////// назначить модель из меню игроку 
+	new i_team = pev( idx_player, pev_team )
+	new ItemData[64], m_Name[64], i_Access, i_Callback
+	menu_item_getinfo(menu, item, i_Access, ItemData, charsmax(ItemData), m_Name, charsmax(m_Name), i_Callback)
+
+	server_print("[menu_allmodels_click] item: %d ModelName %s ItemD:%s ", item, m_Name, ItemData)
 	
 	g_costume_ent[i_team][current_model_list_id] = item
-	// format(g_fake_player_model, 63 , "%s" , m_Name) 
-	// engfunc(EngFunc_SetModel,  g_player_to_g_costume_ent[idx_player] , m_Name) // == 
+	
+	// engfunc(EngFunc_SetModel,  g_player_to_g_costume_ent[idx_player] , m_Name) // из заголовка меню Прямая установка модели.
 	engfunc(EngFunc_SetModel,  g_player_to_g_costume_ent[idx_player] , g_Precached_Player_Models_List[i_team][item]) 
+	// g_player_to_g_costume_ent[idx_player] == g_costume_ent[i_team][id]    // назначение регулируемой enitty для игрока-кастомизатора
 
-	// g_player_to_g_costume_ent[idx_player] == g_costume_ent[i_team][id]
-
-	menu_submodelgroups_browser(idx_player, menu, item, m_Name , m_Data )
-	menu_destroy( menu )
-
-	switch (str_to_num(m_Data))
+	switch (str_to_num(ItemData))
 	{
 		case BTN_MENU_SAVE: 
 		{
 			server_print("BBTN_MENU_SAVE")
-			// menu_destroy(menu)
+			menu_display( idx_player, menu, 0 );
 			return PLUGIN_CONTINUE
 		}
 		case BTN_MENU_RESET: 
 		{
+			g_costume_reset(idx_player);
 			server_print("BTN_MENU_RESET ")
-			// menu_destroy(menu)
+			menu_display( idx_player, menu, 0 );
 			return PLUGIN_CONTINUE
 		}
 		default:
-		{
+		{       
+            menu_submodelgroups_browser(idx_player, menu, item, m_Name , ItemData )
+			// menu_destroy( menu )
 			//return PLUGIN_CONTINUE
 		} 
 	}
-	// получили имя файла из модели, создаём меню если кликнули нужное 
+
 	return PLUGIN_CONTINUE
 }
 
 
 
-public menu_submodelgroups_browser(idx_player, menu, item, m_Name[] , m_Data[])
-{
-	new m_Data[64], m_Name[64], i_Access, i_Callback
-	menu_item_getinfo(menu, item, i_Access, m_Data, charsmax(m_Data), m_Name, charsmax(m_Name), i_Callback)
-	server_print("[menu_submodelgroups_browser] item::index_current_model_list %d m_name::mdl name %s data:: empty sz %s ",item, m_Name, m_Data)
+public menu_submodelgroups_browser(idx_player, menu, item, m_Name[] , ItemData[])
+{ 
+
+
+	new ItemData[64], m_Name[64], i_Access, i_Callback
+	menu_item_getinfo(menu, item, i_Access, ItemData, charsmax(ItemData), m_Name, charsmax(m_Name), i_Callback)
+	server_print("[menu_submodelgroups_browser] item::index_current_model_list %d m_name::mdl name %s data:: empty sz %s ",item, m_Name, ItemData)
 	///////////////
 	// получили из м_Дата имя файла, открываем и парсим. , здесь создадим меню боди групп , надо бередать размеры каждой боди группы
 	new menu_groups = menu_create( "\rChoose groups", "menu_submodelgroups_click" );
@@ -361,8 +347,6 @@ public menu_submodelgroups_browser(idx_player, menu, item, m_Name[] , m_Data[])
 		server_print("BODY SIZE G ENT ARRAY :%d :%d :%d :%d", g_costume_ent[i_team][body_size][0] , g_costume_ent[i_team][body_size][1], g_costume_ent[i_team][body_size][2], g_costume_ent[i_team][body_size][3])
 		
 	}
-	// menu_addblank(menu_groups, 1)
-
 	fclose(filePointer);
 
 	// add special menu points
@@ -390,12 +374,12 @@ public menu_submodelgroups_click( idx_player, menu, item )
 			
 		}
 	}
-	new m_Data[64], m_Name[64], i_Access, i_Callback	
-	menu_item_getinfo(menu, item, i_Access, m_Data, charsmax(m_Data), m_Name, charsmax(m_Name), i_Callback)
+	new ItemData[64], m_Name[64], i_Access, i_Callback	
+	menu_item_getinfo(menu, item, i_Access, ItemData, charsmax(ItemData), m_Name, charsmax(m_Name), i_Callback)
 
-	server_print("[menu_submodelgroups_click] item::idx_bodygroup %d name::bodygroup_name %s data::empty_sz %s ", item, m_Name, m_Data)
+	server_print("[menu_submodelgroups_click] item::idx_bodygroup %d | name::bodygroup_name %s | data::empty_sz %s ", item, m_Name, ItemData)
 	
-	switch (str_to_num(m_Data))
+	switch (str_to_num(ItemData))
 	{
 		case BTN_MENU_BACK: 
 		{
@@ -406,34 +390,31 @@ public menu_submodelgroups_click( idx_player, menu, item )
 		case BTN_MENU_SAVE: 
 		{
 			server_print("BBTN_MENU_SAVE")
-			// menu_destroy(menu)
+			menu_display( idx_player, menu, 0 );
 			return PLUGIN_CONTINUE
 		}
 		case BTN_MENU_RESET: 
-		{
-			server_print("BTN_MENU_RESET ")
-			// menu_destroy(menu)
+		{	
+			g_costume_reset(idx_player);
+			server_print("BTN_MENU_RESET ");
+			menu_display( idx_player, menu, 0 );
 			return PLUGIN_CONTINUE
 		}
 		default:
 		{
-			//return PLUGIN_CONTINUE
+			menu_submodel_browser(idx_player, menu, item, m_Name , ItemData )
+			menu_destroy( menu )
 		} 
 	}
-
-	// menu_submodelgroups_browser(idx_player, menu, item, m_Name , m_Data )
-	// menu_destroy( menu )
-	menu_submodel_browser(idx_player, menu, item, m_Name , m_Data )
-	menu_destroy( menu )
 	return PLUGIN_CONTINUE
 } 
 
 
-public menu_submodel_browser(idx_player, menu, item, m_Name[] , m_Data[])
+public menu_submodel_browser(idx_player, menu, item, m_Name[] , ItemData[])
 {
-	new m_Data[64], m_Name[64], i_Access, i_Callback
-	menu_item_getinfo(menu, item, i_Access, m_Data, charsmax(m_Data), m_Name, charsmax(m_Name), i_Callback)
-	server_print("[menu_submodel_browser] item::idx_bodygroup %d name::bodygroup_name %s data::empty_sz %s ", item, m_Name, m_Data)
+	new ItemData[64], m_Name[64], i_Access, i_Callback
+	menu_item_getinfo(menu, item, i_Access, ItemData, charsmax(ItemData), m_Name, charsmax(m_Name), i_Callback)
+	server_print("[menu_submodel_browser] item::idx_bodygroup %d name::bodygroup_name %s data::empty_sz %s ", item, m_Name, ItemData)
 	new i_team = pev(idx_player, pev_team)
 
 	new menu_submodels = menu_create( "\rChoose Submodel id", "menu_submodel_click" );
@@ -446,8 +427,34 @@ public menu_submodel_browser(idx_player, menu, item, m_Name[] , m_Data[])
 		new point_name[32]
 		format(point_name, 31, "%s %d", m_Name , i)
 		
-		
-		menu_additem( menu_submodels, point_name, sz_selected_body, 0)
+		// здесь определяем распределение скинов, отключаем нерабочие суб-модели
+		// menu_additem( menu_submodels, point_name, sz_selected_body, ADMIN_ADMIN) // для неактивного меню
+		if(  containi(g_Precached_Player_Models_List[i_team][g_costume_ent[i_team][current_model_list_id]], "axis-inf") != -1 )
+		{
+			if( item == 0 && i == 2)
+			{
+				menu_additem( menu_submodels, point_name, sz_selected_body, ADMIN_ADMIN) // для неактивного меню
+			}
+			else 
+			{
+				menu_additem( menu_submodels, point_name, sz_selected_body, 0);
+			}
+		}
+		if(containi(g_Precached_Player_Models_List[i_team][g_costume_ent[i_team][current_model_list_id]], "us-inf") != -1 )
+		{
+			if( item == 0 && i == 6)
+			{
+				menu_additem( menu_submodels, point_name, sz_selected_body, ADMIN_ADMIN) // для неактивного меню
+			}
+			else 
+			{
+				menu_additem( menu_submodels, point_name, sz_selected_body, 0);
+			}
+		}
+		else
+		{
+			menu_additem( menu_submodels, point_name, sz_selected_body, 0);
+		}			
 	}
 
 	menu_additem( menu_submodels, "\r Back to change bodypart", "-10", 0)
@@ -475,45 +482,45 @@ public menu_submodel_click( idx_player, menu, item )
 		}
 	}
 
-
-	new m_Data[64], m_Name[64], i_Access, i_Callback
-	
-	menu_item_getinfo(menu, item, i_Access, m_Data, charsmax(m_Data), m_Name, charsmax(m_Name), i_Callback)
-
-	server_print("[menu_submodel_click] item::idx_sunbmodel %d name:%s data::idx_bodygroup %s ",item, m_Name, m_Data)
-
+	new ItemData[64], m_Name[64], i_Access, i_Callback	
+	menu_item_getinfo(menu, item, i_Access, ItemData, charsmax(ItemData), m_Name, charsmax(m_Name), i_Callback)
+	server_print("[menu_submodel_click] item::idx_submodel %d name:%s data::idx_bodygroup %s ",item, m_Name, ItemData)
 
 	new i_team = pev(idx_player, pev_team)
-	new idx_bodygroup = str_to_num(m_Data)
-	new idx_submodel = item
+	new idx_bodygroup = str_to_num(ItemData) // порядковый элемент массива, строка бодигрупп, не нуждается в корректировке.
+	new idx_submodel = item;
 
+	// server_print("----------------|||| %d idx_bodygroup",idx_bodygroup)
 
-	switch (str_to_num(m_Data))
+	switch (str_to_num(ItemData))
 	{
 		case BTN_MENU_BACK: 
-		{
-			server_print("BTN_MENU_BACK")
-			menu_allmodels_browser(idx_player)
-			return PLUGIN_CONTINUE
+		{       
+			menu_destroy(menu);
+			server_print("BTN_MENU_BACK");
+			menu_allmodels_browser(idx_player);
 		}
 		case BTN_MENU_SAVE: 
 		{
-			server_print("BBTN_MENU_SAVE")  
-			// menu_destroy(menu)
-			
-			g_costume_ent[i_team][body_selected][idx_bodygroup] = idx_submodel
-			output_chat(idx_player)
-			return PLUGIN_CONTINUE
+			server_print("BBTN_MENU_SAVE");
+			menu_display( idx_player, menu, 0 );
+			g_costume_update(idx_player);
+			// return PLUGIN_CONTINUE
 		}
 		case BTN_MENU_RESET: 
-		{
+		{	
+			g_costume_reset(idx_player);
 			server_print("BTN_MENU_RESET ")
-			// menu_destroy(menu)
+			menu_display( idx_player, menu, 0 );
 			return PLUGIN_CONTINUE
 		}
 		default:
 		{
-			//return PLUGIN_CONTINUE
+			g_costume_ent[i_team][body_selected][idx_bodygroup] = idx_submodel
+			menu_setprop( menu, MPROP_EXIT, MEXIT_ALL );
+			menu_display( idx_player, menu, 0 );
+			g_costume_update(idx_player)
+			// output_chat(idx_player)
 		} 
 	}
 
@@ -523,15 +530,8 @@ public menu_submodel_click( idx_player, menu, item )
 	// если м_Дата последняя будет пусткой, то скорее всего там будет адрес на переход каталога меню выше. 
 	// можно клик объеденить с последующим брауз, для оптимизации передачи
 
-	// menu_submodel_browser(idx_player, menu, item, m_Data , m_Name)
-	// отлови селектед 
-
-
-
-	
-	menu_setprop( menu, MPROP_EXIT, MEXIT_ALL );
-	menu_display( idx_player, menu, 0 );
-
+	// menu_submodel_browser(idx_player, menu, item, ItemData , m_Name)
+	// отлови селектед
 
 	return PLUGIN_CONTINUE
 }
@@ -539,7 +539,7 @@ public menu_submodel_click( idx_player, menu, item )
 public output_chat(idx_player)
 {	
 	new i_team = pev(idx_player, pev_team)
-	client_print( idx_player , print_chat, "%d | { %d, %d, %d, %d }| { %d, %d, %d, %d } ", 
+	server_print("%d | { %d, %d, %d, %d }| { %d, %d, %d, %d } ", 
 	g_costume_ent[i_team][body_groups], 
 	g_costume_ent[i_team][body_size][0],
 	g_costume_ent[i_team][body_size][1],
@@ -550,38 +550,20 @@ public output_chat(idx_player)
 	g_costume_ent[i_team][body_selected][2],
 	g_costume_ent[i_team][body_selected][3])
 
-
-
 	new pev_index_for = dyn_pev_body_index( g_costume_ent[i_team][body_groups], g_costume_ent[i_team][body_size] , g_costume_ent[i_team][body_selected]) 
 
 	set_pev( g_costume_ent[i_team][id] , pev_body , pev_index_for)
-
-	client_print( idx_player , print_chat, " pev_body %d," , pev_index_for )
-
-
-
+	server_print( "New is pev_body %d," , pev_index_for )
 }
 
-/*  2 - 4  - 1 
-[menu_allmodels_click] item::index_current_model_list 1 m_name::mdl name models/player/axis-para/axis-para.mdl data:: empty sz
-[menu_submodelgroups_browser] item::index_current_model_list 1 m_name::mdl name models/player/axis-para/axis-para.mdl data:: empty sz
-[menu_submodelgroups_click] item::idx_bodygroup 3 name::bodygroup_name GEAR parts: 7 data::empty_sz
-[menu_submodel_browser] item::idx_bodygroup 3 name::bodygroup_name GEAR parts: 7 data::empty_sz
-[menu_submodel_click] item: 0 name:GEAR parts: 7 1 data: 3
-
-почему гир ? 
-
-*/
 
 
 // Функция расчета индекса pev_body
-stock dyn_pev_body_index(num_bodygroups, const size_bodygroups[], const chosen_submodels[])
-{
+public dyn_pev_body_index(num_bodygroups, const size_bodygroups[], const chosen_submodels[])
+{	
+	// int = количество бодигрупп, размер каждой бодигруппы, выбранные порядковые номера моделей в каждой бодигруппе
     new index = 0;
     new group_multiplier = 1; // Множитель для каждой группы
-
-
-
 
     // Проверка на корректность количества групп
     if (num_bodygroups <= 0) 
@@ -607,8 +589,94 @@ stock dyn_pev_body_index(num_bodygroups, const size_bodygroups[], const chosen_s
 }
 
 
+public g_costume_update(idx_player)
+{	
+	// определяем кто вызвал, на какую g_costume_ent обновить костюм
+	new i_team = pev( idx_player, pev_team); // определяем респаун, на котором энтити.
+	new idx_custume_ent = g_costume_ent[i_team][id]; // определяем idx_custume_ent
+	new idx_body_updated = dyn_pev_body_index( g_costume_ent[i_team][body_groups], g_costume_ent[i_team][body_size], g_costume_ent[i_team][body_selected])
+	server_print(" Внимание !!!!! Индекс расчитан == %d", idx_body_updated)
+	set_pev( idx_custume_ent, pev_body, idx_body_updated);
+	/*
+	g_costume_ent[i_team][current_body_index] // это сохранённый индекс здесь надо определиться либо текущий, что бы невзыимать с энтити, либо временный, не соотвествующий ентити
+	g_costume_ent[i_team][body_selected] // это массив выбранных субмоделей
+	*/
 
-//  при неактивности прятать энтити
-/// назначить модель при открытии меню, после этого отобразить модель
-// привязать ini file по стим айди 
+	//Assign Costume вызвать одевание костюма на самого игрока.
+	new model[64];
+    // get_user_info(idx_custume_ent, "model", model, 63);
+	server_print(" ДОЪУЯ СЭКОНОМИЛИ ВРЕМЯ %s", model);
+	Player_Rewrite_From_Costume(idx_player);
+}
 
+public g_costume_reset(idx_player)
+{	
+	// Можно создать рекурсивное меню, если вызван reset, то нужно каким-то образом передавать это условия в виде item. 
+	// до тех пора, пока это не реализовано, будем просто очищать селектед и pev_body
+	
+	if(idx_player)
+	{ // если функция вызвана от игрока, то массивы будут очищены
+
+	// определяем кто вызвал, на какую g_costume_ent обновить костюм
+	new i_team = pev( idx_player, pev_team); // определяем респаун, на котором энтити.
+	new idx_custume_ent = g_costume_ent[i_team][id]; // определяем idx_custume_ent
+	for (new i = 0; i < g_costume_ent[i_team][body_groups]; i++)
+	{	
+		// g_costume_ent[i_team][body_size][i] = 0 // Неактивно , пока нет достойного рекурсивного меню.
+		g_costume_ent[i_team][body_selected][i] = 0 
+	}
+	// g_costume_ent[i_team][body_groups] = 0 // Неактивно , пока нет достойного рекурсивного меню.
+	g_costume_ent[i_team][current_body_index] = 0;
+	set_pev( idx_custume_ent, pev_body, g_costume_ent[i_team][current_body_index]);
+	server_print(" !!! Очистка !!!!!");
+
+	}
+}
+
+public Player_Rewrite_From_Costume(idx_player)
+{	
+	//-- надо доделать адекватное извлечение имени модели из этити, на игрока.
+	// определяем кто вызвал, на какую g_costume_ent обновить костюм
+	new i_team = pev( idx_player, pev_team); // определяем респаун, на котором энтити.
+	// new idx_custume_ent = g_costume_ent[i_team][id]; // определяем idx_custume_ent
+
+	new filename[32]; // краткое имя модели
+	// Получаем имя файла после последнего слеша
+	new last_slash = strfind(g_Precached_Player_Models_List[i_team][g_costume_ent[i_team][current_model_list_id]], "/", true, MAX_MODELNAME-1); // true для поиска с конца
+	copy(filename, sizeof(filename), g_Precached_Player_Models_List[i_team][g_costume_ent[i_team][current_model_list_id]][last_slash + 1]);
+	// Удаляем расширение
+	replace(filename, sizeof(filename), ".mdl", "");
+
+	server_print(" СОКРАЩЁННОЕ ИМЯ === %s", filename); 
+}
+
+public Player_Body_Assign(idx_player)
+{
+    //Assign Costume
+    new model[64];
+    get_user_info(idx_player, "model", model, 63);
+	
+	/*
+	взять актуальное имя модели энтити и передать игроку 
+	// g_Precached_Player_Models_List[i_team][g_costume_ent[i_team][current_model_list_id]] // == models/player/axis-inf/axis-inf.mdl
+	*/
+    set_pev( idx_player, pev_body, 1024);
+    set_user_info(idx_player, "model", model);    
+}
+
+
+//-- надо доделать адекватное извлечение имени модели из этити, на игрока.
+/*
+затем убрать дебаги, потом вшить вариативность при респауне.
+перепроверить все защиты, убрать дебагмесседжи, скорее всего придёться сохранять не только кастомизированный индекс, но и шорт-нэйм модели.
+для привязки после респауна , игроку.
+
+возможно имеетсмысл пропарсить имена субмоделей, для красоты.
+
+
+
+язык программирования Pawn Amxx Goldsrc
+у меня есть массив new modelfile[64] = "models/player/classical/axis-inf.mdl"
+иногда он имеет и другие значения моделей,  мне нужно из этой строки получить только последний фрагмент: 
+"axis-inf" , как мне отфильтровать бодобные строки так, что бы сначала найти самый последний слеш (или самый первый с конца), и после него взять имя файла, а потом удалить ".mdl"
+*/

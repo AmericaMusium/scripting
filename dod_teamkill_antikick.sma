@@ -2,6 +2,10 @@
 #include <fakemeta>
 
 #define m_iNumTKs 478
+#define HUDW_BAZOOKA 29
+#define HUDW_PANZERSCHRECK 30
+#define HUDW_PIAT 31
+
 
 public plugin_init()
 {
@@ -19,7 +23,22 @@ public client_death(killer,victim,wpnindex,hitplace,TK)
     }
     else
     {
-           return;
+        return;
     }
+}
 
+public on_DeathMsg()
+{       
+    // здесь нужно быть внимательным, т.к. ID_WEAPON HUD не соотвествует DODW_CONST
+    new idx_killer = read_data(1);  // KILLER
+    // new idx_victim = read_data(2); // WEAPON
+    new id_weapon = read_data(3); // WEAPON
+    switch (id_weapon)
+    {
+        case HUDW_BAZOOKA, HUDW_PANZERSCHRECK, HUDW_PIAT:
+        {
+            set_pdata_int(idx_killer, m_iNumTKs, 0, 5) // RESET TEAMKILL
+        }
+        default: return;
+    }
 }

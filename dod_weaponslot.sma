@@ -60,7 +60,7 @@ public plugin_init() {
 	g_msgAmmoX	= get_user_msgid( "AmmoX" );
 	g_cvarEnabled = register_cvar( "dod_rocketclass", "1" );
 	register_cvar( "dod_rocketclass_stats", "2.0", FCVAR_SERVER|FCVAR_SPONLY );
-	register_clcmd("say /kar", "dod_give_kar_to_slot");
+	register_clcmd("say 1232", "dod_give_kar_to_slot");
 
 	register_message(MSG_WEAPONLIST, "MsgHook_WeaponList");
 }

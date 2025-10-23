@@ -27,12 +27,12 @@
 #define GMORTAR_DAMAGE 44.0
 
 
-new const g_gmcname[] = "groundmortar" //Classname нашего entity
+new const g_gmcname[] = "groundmortar" //Classname пїЅпїЅпїЅпїЅпїЅпїЅ entity
 
-new const g_gmmdl[] = "models/mapmodels/hk_mortar.mdl" // Модель
-new const gentSpriteExplode[] = "sprites/explosion1.spr" //Спрайт взрыва
-new const gentSpriteSmoke[] = "sprites/puff.spr" //Спрайт дыма
-new gent_Sprite[3] //Сюда запишем индексы спрайтов
+new const g_gmmdl[] = "models/mapmodels/hk_mortar.mdl" // пїЅпїЅпїЅпїЅпїЅпїЅ
+new const gentSpriteExplode[] = "sprites/explosion1.spr" //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+new const gentSpriteSmoke[] = "sprites/puff.spr" //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+new gent_Sprite[3] //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 
 new g_gm_limit[33]
@@ -47,30 +47,30 @@ new g_MessageFade, gMsgDeathMsg, gMsgFrags
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
-	register_touch(g_gmcname, "player", "EntityTouch") //Создаем событие прикосновение с entity
+	register_touch(g_gmcname, "player", "EntityTouch") //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ entity
 	// register_forward(FM_Touch, "EntityTouch", 1)
-	// register_think(g_gmcname, "EntityThink") //Создаем событие действий entity
+	// register_think(g_gmcname, "EntityThink") //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ entity
 	
 	
-	register_clcmd("say /gmor", "create_gmortar") //Команда для создание
-	// register_clcmd("say /delete", "DeleteAllMines") //Команда для создание	
+	register_clcmd("say /gmor", "create_gmortar") //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// register_clcmd("say /delete", "DeleteAllMines") //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ	
 	
 	
 	
 	register_event("HLTV", "Del_all_gmortars", "a", "1=0", "2=0")
 	
-	g_MessageFade = get_user_msgid("ScreenFade") //  регистрирует глоб месседж
+	g_MessageFade = get_user_msgid("ScreenFade") //  пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	gMsgDeathMsg = get_user_msgid("DeathMsg")
 	gMsgFrags = get_user_msgid("Frags")
 	
 	
 	// RegisterHam(Ham_TakeDamage, "info_target", "fw_takedamage");
-	register_forward(FM_CmdStart,"anttroop_button") // регистрируем форвард для открытия меню по кнопке е
+	register_forward(FM_CmdStart,"anttroop_button") // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ
 	
 	
 	// p_friendlyfire = get_cvar_pointer("mp_friendlyfire")
 }
-public gmortar_button(id, uc_handle)// функция, которая реализует открытие меню на кнопку е
+public gmortar_button(id, uc_handle)// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ
 {
 static Button, OldButtons;
 Button = get_uc(uc_handle, UC_Buttons);
@@ -84,16 +84,16 @@ if((Button & IN_USE) && !(OldButtons & IN_USE))
 
 public plugin_precache()
 {
-	precache_model( g_gmmdl ) //Передаем в прекаш модель
-	gent_Sprite[1] = precache_model( gentSpriteExplode ) //Передаем в прекаш спрайт взрыва
-	gent_Sprite[2] = precache_model( gentSpriteSmoke ) //Передаем в прекаш спрайт дыма
+	precache_model( g_gmmdl ) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	gent_Sprite[1] = precache_model( gentSpriteExplode ) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	gent_Sprite[2] = precache_model( gentSpriteSmoke ) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 } 
 
 public Del_all_gmortars(){
 	
-	new gment  = engfunc(EngFunc_FindEntityByString, 0, "model", g_gmmdl) // cоздаём переменную присваем номер через функцию
+	new gment  = engfunc(EngFunc_FindEntityByString, 0, "model", g_gmmdl) // cпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	while(gment != 0){
-		/// пока энтити не равна нолю и если она больше то удаляем
+		/// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		if(gment > 0){
 			remove_entity(gment)
 			// client_print(0,print_chat,"Removed %d", gment)
@@ -107,7 +107,7 @@ public Del_all_gmortars(){
 			g_maxgm= 0
 			gment = 0
 			break
-			/// а вот она теперь равна нолю
+			/// пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 		}
 	}	
 	
@@ -119,53 +119,53 @@ public Del_all_gmortars(){
 public create_gmortar(id)
 {
 	if(is_user_connected(id) && is_user_alive(id)){
-		new iOrigin[3] //Создаем массив для хранение координат
-		new iOrigin1[3] // игрока ориджэин
-		get_user_origin(id, iOrigin, 3) //Получаем координаты куда смотрит игрок
-		get_user_origin(id, iOrigin1, 0) // координаты игрока
+		new iOrigin[3] //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		new iOrigin1[3] // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		get_user_origin(id, iOrigin, 3) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+		get_user_origin(id, iOrigin1, 0) // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		
-		new Float:fOrigin[3] //Создаем массив для float коодинат
-		IVecFVec(iOrigin, fOrigin) //Конвертируем координаты в дробные \ берём точку трассировки зрения
+		new Float:fOrigin[3] //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ float пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		IVecFVec(iOrigin, fOrigin) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ \ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		
 		// new gment = engfunc(EngFunc_CreateNamedEntity,engfunc(EngFunc_AllocString,"info_target"))
-		new gment = create_entity("info_target")	// создаём Энтити
-		set_pev(gment, pev_origin, fOrigin) //Присваиваем координаты точки зрения	
+		new gment = create_entity("info_target")	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+		set_pev(gment, pev_origin, fOrigin) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ	
 		
 		
 		if(!pev_valid(gment)) 
-			{//Проверяем сущетсвует ли, если нет
-		return PLUGIN_HANDLED //Заканчиваем. Дальше нам делать нечего
+			{//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+		return PLUGIN_HANDLED //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	}
 	
 	//set_pev(gment, pev_health, 1.0);
 	//set_pev(gment, pev_takedamage, DAMAGE_YES);
-	set_pev(gment, pev_classname, g_gmcname) //Присваиваем Classname
-	set_pev(gment, pev_solid, SOLID_BBOX) //Делаем его непроходимым
-	set_pev(gment, pev_movetype, MOVETYPE_NONE) //Не задаем тип движения, во всяком случаи пока
-	// set_pev(gment, pev_sequence, 0) //Выставляем № анимации при создании
-	// set_pev(gment, pev_framerate, 1.0) //Выставляем скорость анимации
+	set_pev(gment, pev_classname, g_gmcname) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Classname
+	set_pev(gment, pev_solid, SOLID_BBOX) //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	set_pev(gment, pev_movetype, MOVETYPE_NONE) //пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+	// set_pev(gment, pev_sequence, 0) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// set_pev(gment, pev_framerate, 1.0) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	
-	new units = get_entity_distance(id,gment) // берём дистанцию между хозяином и миной
-	// client_print(id,print_chat,"Distance to mine %d units", units) // вывод информации
+	new units = get_entity_distance(id,gment) // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
+	// client_print(id,print_chat,"Distance to mine %d units", units) // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	
-	if(units > GMORTAR_SETDIST || g_maxgm>= GMORTAR_MAXALL || g_gm_limit[id] >= GMORTAR_MAXHAVE)  // если расстоняние более 150 , или колво макс мин больше то удаляем
+	if(units > GMORTAR_SETDIST || g_maxgm>= GMORTAR_MAXALL || g_gm_limit[id] >= GMORTAR_MAXHAVE)  // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 150 , пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	{ 
 		remove_entity(gment)
 		// client_print(id,print_chat,"You can not set mine: Distance: %d / %f | Actived mines on ground %d / %d ",units, GMORTAR_SETDIST, g_gm_limit[id], GMORTAR_MAXHAVE )
 		
 	}
 	else{
-		/// ну а если не больше 150 то выполняем этот код
+		/// пїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 150 пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 		
 		// g_maxgmortars++
 		g_gm_limit[id]++
 		g_gm_owner[gment] = id
 		
-		// set_pev(gment, pev_nextthink, get_gametime() + 1.0) //Создаем запуск think
+		// set_pev(gment, pev_nextthink, get_gametime() + 1.0) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ think
 		
-		emit_sound(id,CHAN_VOICE,"weapons/bazookareloadshovehome.wav",0.8,ATTN_NORM,0,PITCH_NORM + random_num(-30, -20)) // звук установки
-		engfunc(EngFunc_SetModel, gment, g_gmmdl) //Присваиваем модель
-		engfunc(EngFunc_SetSize, gment, Float:{-6.0, -6.0, -3.0}, Float:{6.0, 6.0, 45.0}) //Создаем бокс вокруг entity( для прикосновения и не только )
+		emit_sound(id,CHAN_VOICE,"weapons/bazookareloadshovehome.wav",0.8,ATTN_NORM,0,PITCH_NORM + random_num(-30, -20)) // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		engfunc(EngFunc_SetModel, gment, g_gmmdl) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+		engfunc(EngFunc_SetSize, gment, Float:{-6.0, -6.0, -3.0}, Float:{6.0, 6.0, 45.0}) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ entity( пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ )
 		
 		
 		set_task(2.0, "gm_attack", gment )
@@ -183,26 +183,26 @@ new gmentOrigin[3]
 pev(gment,pev_origin,gmentOrigin)
 
 
-message_begin(MSG_BROADCAST,SVC_TEMPENTITY) //Создаем сообщение
-write_byte(TE_EXPLOSION) //Индекс сообщение(взрыва)
-engfunc(EngFunc_WriteCoord, gmentOrigin[0]) //Координата x
-engfunc(EngFunc_WriteCoord, gmentOrigin[1]) //Координата y
-engfunc(EngFunc_WriteCoord, gmentOrigin[2] + 30.0) //Координата z
-write_short(gent_Sprite[1]) //Индекс спрайта взрыва
-write_byte(6) //Размер спрайта
-write_byte(15) //Скорость анимации
-write_byte(0) //Флаги
-message_end() //Конец сообщение
+message_begin(MSG_BROADCAST,SVC_TEMPENTITY) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+write_byte(TE_EXPLOSION) //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ(пїЅпїЅпїЅпїЅпїЅпїЅ)
+engfunc(EngFunc_WriteCoord, gmentOrigin[0]) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ x
+engfunc(EngFunc_WriteCoord, gmentOrigin[1]) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ y
+engfunc(EngFunc_WriteCoord, gmentOrigin[2] + 30.0) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ z
+write_short(gent_Sprite[1]) //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+write_byte(6) //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+write_byte(15) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+write_byte(0) //пїЅпїЅпїЅпїЅпїЅ
+message_end() //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
-message_begin(MSG_BROADCAST,SVC_TEMPENTITY)//Создаем сообщение
-write_byte(TE_SMOKE) //Индекс сообщение(дым)
-engfunc(EngFunc_WriteCoord, gmentOrigin[0]) //Координата x
-engfunc(EngFunc_WriteCoord, gmentOrigin[1]) //Координата y
-engfunc(EngFunc_WriteCoord, gmentOrigin[2] + 50.0) //Координата x
-write_short(gent_Sprite[2]) //Индекс спрайта дыма
-write_byte(15) //Размер спрайта
-write_byte(10) //Скорость анимации
-message_end() //Конец сообщение
+message_begin(MSG_BROADCAST,SVC_TEMPENTITY)//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+write_byte(TE_SMOKE) //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ(пїЅпїЅпїЅ)
+engfunc(EngFunc_WriteCoord, gmentOrigin[0]) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ x
+engfunc(EngFunc_WriteCoord, gmentOrigin[1]) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ y
+engfunc(EngFunc_WriteCoord, gmentOrigin[2] + 50.0) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ x
+write_short(gent_Sprite[2]) //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+write_byte(15) //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+write_byte(10) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+message_end() //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 
 
@@ -211,10 +211,10 @@ write_byte(TE_DLIGHT)
 write_coord(gmentOrigin[0])
 write_coord(gmentOrigin[1])
 write_coord(gmentOrigin[2])
-write_byte(5)
-write_byte(12)
-write_byte(252)
-write_byte(199)
+write_byte(5) //radius in 10's)
+write_byte(12) // R
+write_byte(252) // G 
+write_byte(199) // 
 write_byte(2)
 write_byte(25)
 message_end()
@@ -252,19 +252,19 @@ public gm_damage(gment) {
 
 
 
-new iPlayers[32] //Создаем массив для хранение индексов игроков
-new iPlayer, iNum //Для записи кол-во игроков и отдельный взятый индекс
+new iPlayers[32] //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+new iPlayer, iNum //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 new VictimId
 
-get_players(iPlayers, iNum, "ach") //Получаем игроков, исключая мертвых, ботов и hltv
+get_players(iPlayers, iNum, "ach") //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅ hltv
 
 VictimId = random_num(1, iNum)
 
 
 // scr_shake(VictimId)
 
-new Float:fOrigPl[3] //Создаем массив для float координат игрока
-pev(VictimId, pev_origin, fOrigPl) //Получаем координаты игрока
+new Float:fOrigPl[3] //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ float пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+pev(VictimId, pev_origin, fOrigPl) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
 fOrigPl[0] += random_float(- 400.0 , 400.0)
 fOrigPl[1] += random_float(- 400.0 , 400.0)
@@ -286,16 +286,16 @@ write_byte(25)
 message_end()
 
 
-message_begin(MSG_ALL,SVC_TEMPENTITY) //Создаем сообщение
-write_byte(TE_EXPLOSION) //Индекс сообщение(взрыва)
-engfunc(EngFunc_WriteCoord, fOrigPl[0]) //Координата x
-engfunc(EngFunc_WriteCoord, fOrigPl[1]) //Координата y
-engfunc(EngFunc_WriteCoord, fOrigPl[2] - 20.0) //Координата z
-write_short(gent_Sprite[1]) //Индекс спрайта взрыва
-write_byte(4) //Размер спрайта
-write_byte(15) //Скорость анимации
-write_byte(random_num(0,6)) //Флаги
-message_end() //Конец сообщение
+message_begin(MSG_ALL,SVC_TEMPENTITY) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+write_byte(TE_EXPLOSION) //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ(пїЅпїЅпїЅпїЅпїЅпїЅ)
+engfunc(EngFunc_WriteCoord, fOrigPl[0]) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ x
+engfunc(EngFunc_WriteCoord, fOrigPl[1]) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ y
+engfunc(EngFunc_WriteCoord, fOrigPl[2] - 20.0) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ z
+write_short(gent_Sprite[1]) //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+write_byte(4) //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+write_byte(15) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+write_byte(random_num(0,6)) //пїЅпїЅпїЅпїЅпїЅ
+message_end() //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 
 
@@ -307,12 +307,12 @@ message_end() //Конец сообщение
 
 /*
 
-for(new i; i < iNum; i++) //Создаем цикл по всем игрокам
+for(new i; i < iNum; i++) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 {
-iPlayer = iPlayers[i] //Для удобства записываем отдельно
+iPlayer = iPlayers[i] //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
-new Float:fOrigPl[3] //Создаем массив для float координат игрока
-pev(iPlayer, pev_origin, fOrigPl) //Получаем координаты игрока
+new Float:fOrigPl[3] //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ float пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+pev(iPlayer, pev_origin, fOrigPl) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
 */
 

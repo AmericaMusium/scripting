@@ -5,10 +5,6 @@
 #include <fakemeta>
 #include <fakemeta_util>
 #include <fun>
-#include <dodx>
-#include <dodfun>
-#include <dodconst>
-#include <dodstats>
 #include <hamsandwich>
 
 #define PLUGIN "DOD ENT SCANNER"
@@ -24,7 +20,51 @@
 
 #define m_szTextureName 249 //13
 
+/*
+#include <amxmodx>
+#include <engine>
+#include <fakemeta>
+#include <xs>
 
+#define PLUGIN "Show Aimed Texture Name"
+#define VERSION "0.0.1"
+
+public plugin_init()
+{
+    register_plugin( PLUGIN, VERSION, "ConnorMcLeod" )
+}
+
+public client_PreThink( id )
+{
+    if( is_user_alive(id) )
+    {
+        new Float:start[3], Float:end[3]
+        pev(id, pev_origin, start)
+        pev(id, pev_view_ofs, end)
+        xs_vec_add(start, end, start)
+
+        pev(id, pev_v_angle, end)
+        engfunc(EngFunc_MakeVectors, end)
+        global_get(glb_v_forward, end)
+        xs_vec_mul_scalar(end, 9999.0, end)
+        xs_vec_add(start, end, end)
+
+        new tr = create_tr2()
+        engfunc(EngFunc_TraceLine, start, end, true, id, tr)
+        new pWorld, pHit = get_tr2(tr, TR_pHit)
+        if( pHit >= 0 )
+        {
+            pWorld = pHit
+        }
+
+        new szTextureName[32]
+        engfunc(EngFunc_TraceTexture, pWorld, start, end, szTextureName, charsmax(szTextureName))
+        client_print(id, print_center, szTextureName)
+
+        free_tr2(tr)
+    }
+}
+*/
 
 public plugin_init()
 {
@@ -41,8 +81,8 @@ public plugin_init()
 
 	// register_forward(FM_CmdStart,"anttroop_button")
 
-	RegisterHam(Ham_SetToggleState, "weapon_luger",  "toggle_state")
-	register_forward(FM_PlayerPreThink, "fwdPlayerPreThink", 0)
+	// RegisterHam(Ham_SetToggleState, "weapon_luger",  "toggle_state") не ясно ! 
+	//  register_forward(FM_PlayerPreThink, "fwdPlayerPreThink", 0)
 
 	register_clcmd("say pd", "scan_entity_pdata");
 	register_clcmd("say mes", "find_ent_inPVSfor");

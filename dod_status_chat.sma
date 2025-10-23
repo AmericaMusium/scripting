@@ -4,7 +4,7 @@
 #include <engine>
 #include <dodx>
 #include <dodfun>
-#include <dhudmessage>
+//#include <dhudmessage>
 
 
 // US Allies
@@ -448,7 +448,7 @@ public bar_print_teams()
         {
             for(new all_classes = 0; all_classes < MAX_LINES; all_classes++ )
             {                    
-                set_dhudmessage(DATA[user_team][all_classes][r],DATA[user_team][all_classes][g],DATA[user_team][all_classes][b], HUD_X , (HUD_Y + (HUD_S * float(all_classes))) , DATA[user_team][all_classes][effects], DATA[user_team][all_classes][fxtime], DATA[user_team][all_classes][holdtime], DATA[user_team][all_classes][fadeintime], DATA[user_team][all_classes][fadeouttime], false)
+                set_dhudmessage(DATA[user_team][all_classes][r],DATA[user_team][all_classes][g],DATA[user_team][all_classes][b], HUD_X , (HUD_Y + (HUD_S * float(all_classes))) , DATA[user_team][all_classes][effects], DATA[user_team][all_classes][fxtime], DATA[user_team][all_classes][holdtime], DATA[user_team][all_classes][fadeintime], DATA[user_team][all_classes][fadeouttime])
                 show_dhudmessage(id_owner, DATA[user_team][all_classes][msg_string])
             
             }
