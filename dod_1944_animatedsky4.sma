@@ -2,7 +2,116 @@
 #include <amxmisc>
 #include <engine>
 #include <fakemeta>
+/*
 
+на доннере лучше добавить смену скина облачного неба, с диффузией и сменой оттенков, всё это засинхронить со лайтспесами оставив там дождь навсегда
+вариант 2: делать в одном плагине модель с прозрачной текстурой, но анимаецией, можно попробовать прямо сейчас
+02-10-2025 Создано прозрачное облако работаеще под обычный скайбокс. 
+Задача: построить внешний скайбокс по тому же типу, как базовая подложка, надеемся на отсуствие интерполяции
+И ТАК, КОГДА  внешняя модель в норме и без флагов текстурирования,
+Внутреняя модель прекраснно работает с флагом Transparent что бы задать двухслойной небо, НО!
+При включениии флага Additive на внутренней модели, не работает, и текстуру становится полностью не видно в игре. 
+Проблема последовательности рендера движка, внешнюю модель делать Additive нельзя, так как будет просмтариваться скайбокс обычный. 
+А нам это не надо. 
+Плагин прекрасно работает только с одним дополнительным слоем неба, но я хочу сделать 2 слоя. 
+1 - который полностью перекрывает скайбокс,
+2 - внутренняя модель, которая накладывается в режиме Transparent + Additive  на тектсуры внешний модели. 
+В игровом пространсве мы находимся внутри этих сферических моделей неба. 
+## s
+Считаю что подложку Base делать надо SkinChange + поворот вокруг Z 
+А Clouds надо делать со сменой SkinChange + поворот вокруг Y + AplhaChannel Changing =)
+04-10
+ 
+
++ сделать Angle clamp fuse 
++ Сделать динамический траспарент облаков (вопрос синхронизировать ли его со скином)
+ответ: не синхронизировать, т.к при полной облачности иногда нужна прозрачность, а при частичной нужно бывает и то и другое
+вопрос с Transparent так и не решён. 
+надо проверить дневное небо, и как его затемняет или засветляет цвет. поставить серый и смотреть как работает на ясной погоде. 
+можно ли сделатть сменяемый тип погоды ? на пример ясный\пасмурный это самая сложная комбинация.
+Фактически сейчас разговор идёт вот о каких свойствах:
+Сфера облаков не может использовать и TransParent и Additive . она использует только  !! transparent?? ??
+срочно проверить как работает Транспарент без аддитива
+
+ответ: CLOUDSmdl=> texture.flag=Transparent + pev.kRenderTransTexture = (128-255) от 50до100% наложения. не менее
+
+base.flag.flatshade = true, регулируется при смене освещения, всё меня устраивает. прозрачность облаков поверх работает
+set_pev(g_Sky_Clouds, pev_rendermode, kRenderTransTexture); // отключает флаг additive  на модели )) 
+kRenderTransAlpha\kRenderTransTexture = наложение 128-255  полноценное 
+kRenderTransAdd = additive работает от 128 до 255
+
+
+и так облачность надо делать как монотонный переход + градиентное небо без флага прозрачности, это будет рабоать в обычном режиме наложения 
+и снимает наобходимость работы с палитрой. при этом мы можем отрегулировать смену скинов с облачностью 
+на пример сделать:
+clodmdl1 = полный диифузионный слой облачности
+cloud2 = диффузия в одиночное облако = универсальная модель облков , довольно хорошая. +++ надо делать .flatshade kRenderTransAlpha 75
+
+
+настройку облачности надо делать через конфиг в котором выставляется clamp ! 
+а там уж пусть гуляеть рандомом от и до . рандом внтри плагина разворавичвается назад
+тогда при универсалной модели сохраняется разнообразие и в нужный моммент его можно ограничиить сфокусировав настройками
+
+
+как бы не пришлось делать СУКА ! придётся делать. Солнце и Луну с циклами
+режим kRenderAdditive 128  с довольно нёмными параметрами. 
+скин = цикл луны
+Frames = цикл суток
+
+подумать к чему привязать течение времени.
+на до думать свечки освещения. 
+time-goes = 1
+time-min = начало суток 0
+time-max = конец 24 // это параметр положения солнца и луны
+light-min = это практически сильно привязанный параметр к time
+light-max =
+
+base-skin_min/max = привязать на базу погоды или на базу цвета?
+
+// облако в полном порядке
+cloud-skin-min
+cloud-skin-max = в своём ритме 
+cloud-skin-speed = скорость смены кадров.
+cloud-trans-min/max = облачная интенсивность clamp
+
+sun additive 170 задаёт яркость в дневное время.. 
+поработать со скоростью вращения CLOUD , если прозрачность маленькая, то скрость 30.0 
+и начиная с прозрачности замедлить срочно
+
+
+Самая первая версия плагина подразумевал прекеш одной модели и выбор у неё скина неба, модель была оснащена анимацией вращения, и к сожалению минимальная скорость вращения была не совсем приемлима для меня.
+Переделка анимации означала увеличение размерма файла (на 10-100 килобайт я думаю), тем не менее работать с анимацией через код было ограниченным в том. что завалаось только скорость или номер секвенции либо её кадр (я думаю эти очевидные вещи известны всем). 
+Главная проблема использования готовой анимации, что у неё было одно направление вращения. Я решил отказаться и просто задал угловую скорость врещния модели. 
+Важно: данная модель с картой текстурировано создано не мной, позже я переделал и переместил точку origin в геометрический центр модели. Такая модель стала пригодной для дальнейшей работы.
+Но вернёмся на шаг назад: когда менялись скины и была готовая анимация, я решил сделать около 36 файлов, это был 36 фильм небесного цикла.
+Проблемы с которыми я столкнулся это дискретные значения, который были слишком заметны на медленной скорости, из-за ограничения размера файла текстуры, звёзды были размытыми. 
+Всё это привело меня к попытке создания двухслойного неба, в коротом облака были бы в режиме "additive". 
+На этот раз проблема былоа в том, что если файл модели сохранён с параметром "additive" и "transparent",то модель не отображается вообще.
+поверх другой. Нейросеть сказал что проблема в неком Z-буфере. В прочем мне не захотелось тратить на это время и к глубокой ночи методом подбора и экспериментов у меня получилось следующее:
+я отключил все флаги при комплиции 3д файлов, и решил использовать варианты через amxxmodx set_pev(iEntity, pev_rendermode, kRenderTransAdd); 
+.
+Если на модели включён флаг "transparent", то через amxx вы можете регулировать прозрачность от 128 до 255, ествесвенно что от 0 до 128 совершается слишком сильный скачёк наложения.
+В конечном итоге: повторюсь я отключил все флаги , кроме "flatshade=true" , "fullbright=true", но fullbright кажется не работает в Day Of Defeat. 
+С помощью кода я выбираю тип рендера и регулирую силу наложения. Не поленюсь, расскажу почему всё так стало и на этом закончу свои коментарии:
+Я попробовал создать третью сферу с режимом "Additive" и это сработало, на него я расположил белый шар на чёрном фоне, это позволило симулировать небесные тела, но без цветных оттенков, выглядело ненатурально.
+Тогда я закрасил всю текстуру градиентом, который содержит такие цвета, который мы видели на небе. к моему удивлению последовательность этих цветов была такой же как у радуги. хотя это должно было быть прогнозируемо.
+Затем я добавил на этот градиент светило, но ночной цикл без луны, это меня натолкнуло на то, что бы убрать и выделить в отельный файл, но пока этьо не исполнено.
+Градент вместо кольцевидных переходов, я переделал в ещё более плавный градиень , который представлен на данный момент в релизе.
+Базовый слой я сделал размым но с присутсвием облаков, что бы видно было наложение слоистость при комбинации со вторым слоем. 
+Экспозиция и тональность базового и облачных слоёв многократно подобраны, не за 1 раз, так что на вопрос почему они именно такие , ответ: потому что так они смотрятся пока лучше всего из всех моих проб.
+ 
+12-10-2025 Желаю переструктурировать плагин: 
+Базовы слой было бы не плохо переделать потом ! 
+Облачный слой в норме.
+Слой Цвета прекрасен. 
+Слой Солнца и Луны - надо переделывать
+Слой молний будет субмоделью в небесной модели, и код запуска молнии будет (включение второй субмодели и её выключение.)
+Возможно 
+Молния : добавить эхо молнию, добавть гром предварительный . 
+23-10 наверно ... потом об\еденить модели 
+
+28-10 переделать логику запуск молнии , если ретёрн был, то просто след таск запуска каждый раз именно там. 
+*/
 
 #define PLUGIN		"Animated Sky"
 #define VERSION		"4.0"
@@ -13,6 +122,9 @@
 #define THUNDER		"sprites/laserbeam.spr"
 
 #define TASK_LIGHT	789697
+#define TASK_THUNDER_RUN 789698
+#define TASK_THUNDER_THINK 789699
+#define TASK_THUNDER_DECAY 789700
 
 new idx_Base;
 new idx_Stars;
@@ -51,7 +163,8 @@ new	SKY_LIGHT_MAX = 'z'; // По умолчанию
 new Float:SunMoon_avel_vecmul;
 new Float:g_SkyDayTime;
 
-
+new const g_arg[ ][ ] = { "bk", "dn", "ft", "lf", "rt", "up" }  
+new const g_sky_name[] = {"hav"}
 
 enum 
 {
@@ -92,15 +205,22 @@ public plugin_init()
 
 	
 	Base_Create();
+	
 	Stars_Create();
-	CloudsAir_Create();
-	CloudsRain_Create();
-	SunMoon_Create();
-	ThunderSphere_Create();
 
+	SunMoon_Create();
+	
+	CloudsAir_Create();
+	
+	CloudsRain_Create();
+
+	ThunderSphere_Create();
+	
 	// set_task(random_float(10.0, 10.0), "Sky_Thunder", _, _, _, "b");
 	// set_task(random_float(1.0, 5.0), "ThunderSphere_Mini");
 	set_task(5.0, "Sky_Thunder");
+
+	set_task(5.0, "Sky_Thunder", TASK_THUNDER_RUN, "", 0, "b");
 	
 	
 	Set_Sphere_aVel();
@@ -117,6 +237,14 @@ public plugin_init()
 public plugin_precache()
 {
 	LOAD_CONFIG();
+
+	new precache[ 64 ]; 
+	for( new i; i < sizeof g_arg; i++ ) 
+	{  
+		formatex( precache, 63, "gfx/env/%s%s.tga",g_sky_name, g_arg[ i ] )  
+		precache_generic( precache ) 
+	}  
+	set_cvar_string("sv_skyname", g_sky_name);
 }
 
 public LOAD_CONFIG()
@@ -300,13 +428,12 @@ public Base_Think()
 	set_pev(idx_Base, pev_angles, Sun_Angles);
 
 	BRIGHTNESS = 127.5 * (floatcos(Sun_Angles[1] + 0.0, degrees) + 1.0);
-	BRIGHTNESS -= CLOUDNESS * 1.0;
+	BRIGHTNESS -= CLOUDNESS * 0.5;
 	BRIGHTNESS = floatclamp(BRIGHTNESS, BASE_COLOR_MIN, BASE_COLOR_MAX);
-
 	set_pev(idx_Base, pev_renderamt, BRIGHTNESS);
 
 	STARLESS = (255.0 - BRIGHTNESS * 2.0) - CLOUDNESS;
-	STARLESS = floatclamp(STARLESS, 0.0, 254.0);
+	STARLESS = floatclamp(STARLESS, 0.0, 255.0);
 	set_pev(idx_Stars, pev_renderamt, STARLESS);
 	
 	pev(idx_Base, pev_angles, Sun_Angles);
@@ -363,6 +490,9 @@ public CloudsAir_Create()
 	set_pev(iEntity, pev_framerate, 0.0);
 	set_pev(iEntity, pev_angles, {0.0, 0.0, 0.0}); 
 	engfunc(EngFunc_SetModel, iEntity, sz_Sky_Model[2]);
+
+	set_pev(iEntity, pev_skin, random_num(0,4));
+
 	// engfunc(EngFunc_SetSize, iEntity, Float:{-50000.0, -50000.0, -50000.0}, Float:{50000.0, 50000.0, 50000.0});
 
 	// cloud_avelocty[1] = 2.3 * base_avelocty[1] + generate_random_velocity_compact();
@@ -415,15 +545,13 @@ public CloudsAir_Think()
 	// 50-200 хорошо очень
 
 
-	set_pev(idx_CloudsAir, pev_renderamt, floatclamp(CLOUDNESS, cloud_trans_min, cloud_trans_max)); // 120 охуенный предел для CloudsAir Легкая облачность 120
+	set_pev(idx_CloudsAir, pev_renderamt, floatclamp((CLOUDNESS-30.0), cloud_trans_min, cloud_trans_max)); // 120 охуенный предел для CloudsAir Легкая облачность 120
 	set_pev(idx_CloudsRain, pev_renderamt, floatclamp(CLOUDNESS, cloud_trans_min, cloud_trans_max)); // 120 охуенный предел для CloudsAir Легкая облачность 120
 	
-	SUNLESS_MOONLESS = 255.0 - CLOUDNESS;
-	SUNLESS_MOONLESS = floatclamp(SUNLESS_MOONLESS, 0.0, 255.0);
-
+	SUNLESS_MOONLESS = floatclamp(255.0 - CLOUDNESS, 0.0, 255.0);
 	set_pev(idx_SunMoon, pev_renderamt, SUNLESS_MOONLESS);
 
-	// server_print(" Br %.0f ^t ,Cld %.0f ^t MOON %.0f", BRIGHTNESS, CLOUDNESS, SUNLESS_MOONLESS);
+	server_print(" Br %.0f ^t ,Cld %.0f ^t MOON %.0f", BRIGHTNESS, CLOUDNESS, SUNLESS_MOONLESS);
 }
 
 
@@ -552,8 +680,8 @@ public ThunderSphere_Think()
 
 	if (THUNDERLIGHT <1.0)
 	{
-		remove_task(7545);
-		set_task(random_float(15.0, 50.0), "Sky_Thunder");
+		remove_task(TASK_THUNDER_THINK);
+		set_task(random_float(4.0, 5.0), "Sky_Thunder");
 	}
 	
 	static Float:Th_Angles[3];
@@ -574,7 +702,7 @@ public ThunderSphere_Mini()
 		set_pev(idx_ThunderSphere, pev_skin, 1);
 		THUNDERLIGHT = random_float(10.0, 10.0);
 		set_pev(idx_ThunderSphere, pev_renderamt, THUNDERLIGHT);
-		set_task(0.1 , "ThunderSphere_Think", 7545, _, _, "b");
+		set_task(0.1 , "ThunderSphere_Think", TASK_THUNDER_THINK, _, _, "b");
 	}
 	// random_float(2.0, 3.0)
 	// set_task(random_float(4.0, 5.0), "ThunderSphere_Mini");
@@ -582,60 +710,79 @@ public ThunderSphere_Mini()
 
 
 public Sky_Thunder() 
-{
-	if(CLOUDNESS < 180.0) return;
+{	
+	/*
+	попробовать реализовать смену pev_skin на clouds Air и Clouds Rain:D ) ) тоже классно 
+	А ещё  и на Base Color )  И на MOOON! ))) 
+	*/
+	if(CLOUDNESS < 200.0) 
+	{	
+		remove_task(TASK_THUNDER_RUN);
+		set_task(5.0, "Sky_Thunder", TASK_THUNDER_RUN, "", 0, "b");
+		// set_task(random_float(15.0, 50.0), "Sky_Thunder", TASK_THUNDER_RUN, "", 0, "b");
+		return;
+	}
+	static thunder_mode;
+	thunder_mode = random_num(0,1)
+	switch (thunder_mode)
+	{	
+		case 0:
+		{	
+			THUNDERLIGHT = random_float(50.0, 255.0);
+			set_lights("z");
+			set_task(0.1, "Sky_Thunder_Decay", TASK_THUNDER_DECAY, "", 0);
+			
+			new Float:origin[3], Float:end[3]
+			origin[0] += random_num(-2048, 2048)
+			origin[1] += random_num(-2048, 2048)
+			origin[2] += 2048.0
+
+			end[0] = origin[0] 
+			end[1] = origin[1]
+			end[2] = -2048.0
+
+			engfunc(EngFunc_TraceLine, origin, end, IGNORE_MONSTERS, 0, 0)
+			get_tr2(0, TR_vecEndPos, end)
+
+			message_begin(MSG_BROADCAST,SVC_TEMPENTITY) 
+			write_byte(TE_BEAMPOINTS) 
+			write_coord_f(origin[0]) 
+			write_coord_f(origin[1]) 
+			write_coord_f(origin[2]) 
+			write_coord_f(end[0]) 
+			write_coord_f(end[1]) 
+			write_coord_f(end[2]) 	
+			write_short(g_thunder) 
+			write_byte(1) 
+			write_byte(5) 
+			write_byte(2) 
+			write_byte(60) 
+			write_byte(35)
+			write_byte(255) 
+			write_byte(255) 
+			write_byte(255) 
+			write_byte(255) 
+			write_byte(200) 
+			message_end() 
+			
+		}
+		default:
+		{
+			THUNDERLIGHT = random_float(0.0, 50.0);
+		}
+	}
+	// Thunder skin
+	remove_task(TASK_THUNDER_RUN);
+	set_pev(idx_ThunderSphere, pev_skin, thunder_mode);
 	
-	set_pev(idx_ThunderSphere, pev_skin, 0);
-	set_lights("z");
-	
-	set_task(0.1 , "ThunderSphere_Think", 7545, _, _, "b");
-	THUNDERLIGHT = random_float(50.0, 255.0);
+	set_task(0.1 , "ThunderSphere_Think", TASK_THUNDER_THINK, _, _, "b");
 	set_pev(idx_ThunderSphere, pev_renderamt, THUNDERLIGHT);
-
-	
-	new Float:origin[3], Float:end[3]
-
-	origin[0] += random_num(-2048, 2048)
-	origin[1] += random_num(-2048, 2048)
-	origin[2] += 2048.0
-
-	end[0] = origin[0] 
-	end[1] = origin[1]
-	end[2] = -2048.0
-
-	engfunc(EngFunc_TraceLine, origin, end, IGNORE_MONSTERS, 0, 0)
-	get_tr2(0, TR_vecEndPos, end)
-	
-	message_begin(MSG_BROADCAST,SVC_TEMPENTITY) 
-	write_byte(TE_BEAMPOINTS) 
-	write_coord_f(origin[0]) 
-	write_coord_f(origin[1]) 
-	write_coord_f(origin[2]) 
-	write_coord_f(end[0]) 
-	write_coord_f(end[1]) 
-	write_coord_f(end[2]) 	
-	write_short(g_thunder) 
-	write_byte(1) 
-	write_byte(5) 
-	write_byte(2) 
-	write_byte(60) 
-	write_byte(35)
-	write_byte(255) 
-	write_byte(255) 
-	write_byte(255) 
-	write_byte(255) 
-	write_byte(200) 
-	message_end() 
-	
-	set_task(0.1, "Sky_Thunder_Decay");
-
 }
 
 public Sky_Thunder_Decay()
 {
 	
 	set_lights(szSKY_LIGHT_CURRENT);
-
 	THUNDERLIGHT = 20.0;
 	set_pev(idx_ThunderSphere, pev_skin, 1);
 	// emit_sound(0, CHAN_AUTO, S_Thunder[random_num(0, sizeof(S_Thunder)-1)], 1.0, ATTN_NORM, 0, PITCH_NORM);
@@ -644,20 +791,22 @@ public Sky_Thunder_Decay()
 		if(is_user_connected(id))
 		{
 			client_cmd( id,"spk %s", S_Thunder[random_num(0, sizeof(S_Thunder)-1)]);
-		}
-		
-	}
-	
+		}	
+	}	
 }
 
 
 public Set_Sphere_aVel()
 {	
 	// // Base Color
-	base_avelocty[0] = -0.5 * SunMoon_avel_vecmul;  // X на меня
+	// base_avelocty[0] = -0.5 * SunMoon_avel_vecmul;  // X на меня
+	// base_avelocty[1] = 1.0 * SunMoon_avel_vecmul;  // Z
+	// base_avelocty[2] = -1.0 * SunMoon_avel_vecmul;  // Y   <====
+
+	base_avelocty[0] = 2.0 * SunMoon_avel_vecmul;  // X на меня
 	base_avelocty[1] = 1.0 * SunMoon_avel_vecmul;  // Z
-	base_avelocty[2] = -1.0 * SunMoon_avel_vecmul;  // Y   <====
-	set_pev(idx_Base, pev_angles, {0.0, -90.0, 0.0} );
+	// base_avelocty[2] = 2.0 * SunMoon_avel_vecmul;  // Y   <====
+	set_pev(idx_Base, pev_angles, {0.0, 0.0, 0.0} );
 	set_pev(idx_Base, pev_avelocity, base_avelocty);
 
 	// Stars 
@@ -666,22 +815,23 @@ public Set_Sphere_aVel()
 	// Clouds AIR
 	//cloud_avelocty[1] = 1.2 * base_avelocty[1] + generate_random_velocity_compact(); 
 	// cloud_avelocty[2] = 1.2 * base_avelocty[2] + generate_random_velocity_compact();
-	cloud_avelocty[1] = floatclamp( 1.2 * base_avelocty[1] + generate_random_velocity_compact() , -1.5 , 1.5);
-	cloud_avelocty[2] = floatclamp( 0.6 * base_avelocty[1] + generate_random_velocity_compact() , -1.5 , 1.5);
+	cloud_avelocty[0] = generate_random_velocity_compact();
+	cloud_avelocty[1] = floatclamp( 1.2 * base_avelocty[1] * generate_random_velocity_compact() , -1.5 , 1.5);
+	cloud_avelocty[2] = floatclamp( 0.6 * base_avelocty[1] * generate_random_velocity_compact() , -1.5 , 1.5);
 	set_pev(idx_CloudsAir, pev_avelocity, cloud_avelocty); // задаёт вращение 
-	server_print(" x %f ^t y %f", cloud_avelocty[1], cloud_avelocty[2]);
 
 	// CLouds Rain
-	cloud_avelocty[1] = 1.1 * cloud_avelocty[1] + generate_random_velocity_compact();
-	cloud_avelocty[2] = 1.1 * cloud_avelocty[2] + generate_random_velocity_compact();
+	cloud_avelocty[0] = generate_random_velocity_compact();
+	cloud_avelocty[1] = 1.1 * cloud_avelocty[1] * generate_random_velocity_compact();
+	cloud_avelocty[2] = 1.1 * cloud_avelocty[2] * generate_random_velocity_compact();
 	set_pev(idx_CloudsRain, pev_avelocity, cloud_avelocty); // задаёт вращение 
 	
 
 	// Sun Moon
-	sunmoon_avelocty[0] = 1.0 * SunMoon_avel_vecmul;
-	sunmoon_avelocty[1] = 0.25 * SunMoon_avel_vecmul;
+	sunmoon_avelocty[0] = -1.0 * SunMoon_avel_vecmul;
+	// sunmoon_avelocty[1] = -1.0 * SunMoon_avel_vecmul;
 	// sun_obj_avel[2] = 0.5 * SunMoon_avel_vecmul; // тарелка крутится как руль
-	set_pev(idx_SunMoon, pev_angles, {90.0, 0.0, 0.0}); 
+	set_pev(idx_SunMoon, pev_angles, {180.0, 0.0, 0.0}); 
 	set_pev(idx_SunMoon, pev_avelocity, sunmoon_avelocty);
 
 	// Thunder 
