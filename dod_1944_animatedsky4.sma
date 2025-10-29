@@ -202,30 +202,22 @@ public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-
 	
 	Base_Create();
-	
 	Stars_Create();
-
-	SunMoon_Create();
-	
+	SunMoon_Create();		
 	CloudsAir_Create();
-	
 	CloudsRain_Create();
-
 	ThunderSphere_Create();
-	
+
 	// set_task(random_float(10.0, 10.0), "Sky_Thunder", _, _, _, "b");
 	// set_task(random_float(1.0, 5.0), "ThunderSphere_Mini");
-	set_task(5.0, "Sky_Thunder");
-
 	set_task(5.0, "Sky_Thunder", TASK_THUNDER_RUN, "", 0, "b");
 	
 	
 	Set_Sphere_aVel();
 
-	set_cvar_num("sv_zmax", 50000);	
+	set_cvar_num("sv_zmax", 30000);	
 	set_cvar_num("sv_skycolor_r", 0);
 	set_cvar_num("sv_skycolor_g", 0);
 	set_cvar_num("sv_skycolor_b", 0);
@@ -278,6 +270,10 @@ public LOAD_CONFIG()
 			}
 			continue;
 		}
+		//
+		is_right_map++;
+		not_find++;
+				//
 		if(is_right_map)
 		{
 			strtok(linedata, key, charsmax(key), value, charsmax(value), '=');
@@ -510,7 +506,7 @@ public CloudsAir_Create()
 
 	idx_CloudsAir = iEntity;
 	
-	set_task( g_SkyDayTime / 600.0 , "CloudsAir_Think", _, _, _, "b");
+	set_task( (g_SkyDayTime * 2.3) / 600.0 , "CloudsAir_Think", _, _, _, "b");
 
 }
 
@@ -521,7 +517,7 @@ public CloudsAir_Think()
 	CLOUDNESS += 1.0 * float(cloud_skin_direction);
 	if(CLOUDNESS >= cloud_trans_max || CLOUDNESS <= cloud_trans_min)
 	{
-		if(ChanceBet < 5) // 30% chance развернуться раньше/позже границы
+		if(ChanceBet < 30) // 30% chance развернуться раньше/позже границы
 		{
 			cloud_skin_direction = -cloud_skin_direction; // Разворот
 			CLOUDNESS = floatclamp(CLOUDNESS, cloud_trans_min, cloud_trans_max);
@@ -532,26 +528,25 @@ public CloudsAir_Think()
 			if(CLOUDNESS >= cloud_trans_max)
 				CLOUDNESS = cloud_trans_max;
 			else
+			{	
 				CLOUDNESS = cloud_trans_min;
+				set_pev(idx_CloudsAir, pev_skin, random_num(0,4));
+			}
 			cloud_skin_direction = -cloud_skin_direction;
 		}
 	}
+	/*
 	// Дополнительный случайный разворот в середине диапазона (5% chance)
 	if(ChanceBet < 1 && CLOUDNESS > cloud_trans_min + 10.0 && CLOUDNESS < cloud_trans_max - 10.0)
 	{
 		cloud_skin_direction = -cloud_skin_direction;
 	}
-	// set_pev(idx_CloudsAir, pev_renderamt, CLOUDNESS); // 120 охуенный предел для CloudsAir Легкая облачность 120 
-	// 50-200 хорошо очень
-
-
+	*/
 	set_pev(idx_CloudsAir, pev_renderamt, floatclamp((CLOUDNESS-30.0), cloud_trans_min, cloud_trans_max)); // 120 охуенный предел для CloudsAir Легкая облачность 120
 	set_pev(idx_CloudsRain, pev_renderamt, floatclamp(CLOUDNESS, cloud_trans_min, cloud_trans_max)); // 120 охуенный предел для CloudsAir Легкая облачность 120
-	
-	SUNLESS_MOONLESS = floatclamp(255.0 - CLOUDNESS, 0.0, 255.0);
-	set_pev(idx_SunMoon, pev_renderamt, SUNLESS_MOONLESS);
 
-	server_print(" Br %.0f ^t ,Cld %.0f ^t MOON %.0f", BRIGHTNESS, CLOUDNESS, SUNLESS_MOONLESS);
+
+	// server_print(" Br %.0f ^t ,Cld %.0f ^t MOON %.0f", BRIGHTNESS, CLOUDNESS, SUNLESS_MOONLESS);
 }
 
 
@@ -603,6 +598,7 @@ public SunMoon_Create()
 
 	// 20630313 mm 
 	// 24062255 mm
+	
 	set_pev(idx_SunMoon, pev_angles, {0.0, 0.0, 0.0}); 
 	engfunc(EngFunc_SetModel, iEntity, sz_Sky_Model[5]);
 	dod_set_size(iEntity);
@@ -612,28 +608,20 @@ public SunMoon_Create()
 	
 	// engfunc(EngFunc_SetSize, iEntity, Float:{-50000.0, -50000.0, -50000.0}, Float:{50000.0, 50000.0, 50000.0});
 
-	
-	set_pev(iEntity, pev_rendermode, kRenderTransAdd); // Render alpha
-	set_pev(iEntity, pev_renderamt, 255.0);
 	idx_SunMoon = iEntity;
+	set_pev(idx_SunMoon, pev_rendermode, kRenderTransAdd);
+	set_pev(idx_SunMoon, pev_renderamt, 255.0);
+
 	// set_task( g_SkyDayTime / 600.0 , "SunMoon_Think", _, _, _, "b");
 }
 
 public SunMoon_Think()
 {	
 	//  <>>> CloudsAir_Think()
-	/*
-	SUNLESS_MOONLESS = 255.0 - CLOUDNESS;
-
-	MoonBrightness = BRIGHTNESS - (CLOUDNESS*0.5);
-	MoonBrightness = floatclamp(MoonBrightness, 0.0, 255.0);
-	set_pev(idx_SunMoon, pev_renderamt, STARLESS);
-
-	SUNLESS_MOONLESS = floatclamp(SUNLESS_MOONLESS, 0.0, 255.0);
+	SUNLESS_MOONLESS = floatclamp(255.0 - CLOUDNESS * 1.0, 0.0, 255.0);
 	set_pev(idx_SunMoon, pev_renderamt, SUNLESS_MOONLESS);
-	//server_print("MOONRIGHT %f", MoonBrightness);
-	*/
 }
+
 
 
 
@@ -799,10 +787,6 @@ public Sky_Thunder_Decay()
 public Set_Sphere_aVel()
 {	
 	// // Base Color
-	// base_avelocty[0] = -0.5 * SunMoon_avel_vecmul;  // X на меня
-	// base_avelocty[1] = 1.0 * SunMoon_avel_vecmul;  // Z
-	// base_avelocty[2] = -1.0 * SunMoon_avel_vecmul;  // Y   <====
-
 	base_avelocty[0] = 2.0 * SunMoon_avel_vecmul;  // X на меня
 	base_avelocty[1] = 1.0 * SunMoon_avel_vecmul;  // Z
 	// base_avelocty[2] = 2.0 * SunMoon_avel_vecmul;  // Y   <====
@@ -893,7 +877,7 @@ public Update_Lighting_By_Angle_clean()
     // Отладочный вывод
     static old_light = -1;
     if (old_light != current_light_char) {
-        server_print("[SKY] Освещение: %c (угол: %.1f°)", current_light_char, angle);
+        // server_print("[SKY] Освещение: %c (угол: %.1f°)", current_light_char, angle);
         old_light = current_light_char;
     }
 }
@@ -942,9 +926,10 @@ public Update_Lighting_By_Angle()
     
     // Отладочный вывод
     static old_light = -1;
-    if (old_light != current_light_char) {
-        server_print("[SKY] Освещение: %c (угол: %.1f° | Облачность: %.0f| Влияние: %.1f%%)", 
-            current_light_char, angle, CLOUDNESS, cloud_influence * 100.0);
+    if (old_light != current_light_char) 
+	{
+        // server_print("[SKY] Освещение: %c (угол: %.1f° | Облачность: %.0f| Влияние: %.1f%%)", 
+			// current_light_char, angle, CLOUDNESS, cloud_influence * 100.0);
         old_light = current_light_char;
     }
 }
@@ -994,7 +979,7 @@ public Update_Lighting_By_Angle_cloud1()
     // Отладочный вывод
     static old_light = -1;
     if (old_light != current_light_char) {
-        server_print("[SKY] Освещение: %c (угол: %.1f° | Облачность: %.0f)", current_light_char, angle, CLOUDNESS);
+        // server_print("[SKY] Освещение: %c (угол: %.1f° | Облачность: %.0f)", current_light_char, angle, CLOUDNESS);
         old_light = current_light_char;
     }
 }
