@@ -117,6 +117,22 @@ _-----
 За исключением p_models_anim  , к сожалению в этим проблемы всегда. Можно пробовать писать стокки для решения проблемы анимации.
 
 29-09-2025 =))) заглянул утащить технологии на куриную базуку
+
+09-11 
+public fw_TraceAttack_Post(entity, attacker, Float:damage, Float:fDir[3], ptr, damagetype) {
+         if(!CustomItem(get_pdata_cbase(attacker, m_pActiveItem, 5))) return HAM_IGNORED;
+         static Float:vecEnd[3]; get_tr2(ptr, TR_vecEndPos, vecEnd);
+    engfunc(EngFunc_MessageBegin, MSG_PAS, SVC_TEMPENTITY, vecEnd, 0);
+         write_byte(TE_GUNSHOTDECAL);
+    engfunc(EngFunc_WriteCoord, vecEnd[0]);
+         engfunc(EngFunc_WriteCoord, vecEnd[1]);
+         engfunc(EngFunc_WriteCoord, vecEnd[2]);
+         write_short(entity);
+         write_byte(random_num(41, 45));
+         message_end();
+         return HAM_IGNORED;
+}
+
 */
 
 #define w_config "addons/amxmodx/configs/w_weapons.ini"

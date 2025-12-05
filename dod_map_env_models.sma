@@ -6,7 +6,7 @@
 
 new const sz_map_model[][] = 
 {	
-	"models/1944/donner_cube.mdl",
+	"models/1944/snowflake_array.mdl",
 }
 
 
@@ -35,13 +35,16 @@ public env_model_create()
 	set_pev(iEntity, pev_sequence, 0);
 	set_pev(iEntity, pev_angles, {0.0, 0.0, 0.0});
 
+	/*
 	set_pev(iEntity, pev_rendermode, kRenderTransTexture); // Render alpha
 	set_pev(iEntity, pev_renderamt, 200.0); // 100 наверно крайнее значение
 	set_pev(iEntity, pev_renderfx, kRenderFxNone); // kRenderFxFadeFast 2 
 	set_pev(iEntity, pev_rendercolor, {0.0, 0.0, 0.0} );
+	*/
     engfunc(EngFunc_SetModel, iEntity, sz_map_model[0]);
     
     set_pev(iEntity, pev_angles, {0.0, 0.0, 0.0});
+	set_pev(iEntity, pev_avelocity, {0.0, 10.0, 0.0});
     engfunc(EngFunc_SetOrigin, iEntity,	{0.0, 0.0, 0.0});
     engfunc(EngFunc_SetSize, iEntity, Float:{-4096.0, -4096.0, -4096.0}, Float:{4096.0, 4096.0, 4096.0});
 
